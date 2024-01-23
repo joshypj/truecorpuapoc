@@ -1,0 +1,38 @@
+apiVersion: "sparkoperator.hpe.com/v1beta2"
+kind: SparkApplication
+metadata:
+  name: spark-mnist-{{ts_nodash|replace("T", "")}}
+spec:
+  sparkConf:
+    spark.mapr.extraconf.secret: {{dag_run.conf.get("s3_secret_name", "spark-s3-creds")}}
+    spark.hadoop.fs.s3a.path.style.access: "true"
+    spark.hadoop.fs.s3a.impl: "org.apache.hadoop.fs.s3a.S3AFileSystem"
+    spark.hadoop.fs.s3a.connection.ssl.enabled: "false"
+  type: Scala
+  sparkVersion: 3.4.0
+  mode: cluster
+  image: {{dag_run.conf["airgap_registry_url"]|default("", True)}}gcr.io/mapr-252711/ezaf-spark-demo-example:fy23-q3-mnist
+  imagePullPolicy: Always
+  mainApplicationFile: local:///tmp/DataTransfer.jar
+  mainClass: com.mapr.sparkdemo.DataTransfer
+  arguments:
+    - s3a://ezaf-demo/data/mnist
+    - binaryFile
+    - file:///mnt/user/{{dag_run.conf.get("training_path", "mnist-spark-data3")}}
+    - parquet
+  restartPolicy:
+    type: Never
+  imagePullSecrets:
+    - imagepull
+  driver:
+    cores: 1
+    coreLimit: "1000m"
+    memory: "512m"
+    labels:
+      version: 3.4.0
+  executor:
+    cores: 1
+    instances: 2
+    memory: "512m"
+    labels:
+      version: 3.4.0

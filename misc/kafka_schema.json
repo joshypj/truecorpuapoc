@@ -1,0 +1,9 @@
+jsonSchema = StructField("payload", StructType([
+    StructField("after", StructType([StructField('o_id',LongType(),True),
+    StructField('o_w_id',LongType(),True),
+    StructField('o_d_id',LongType(),True),
+    StructField('o_c_id',LongType(),True),
+    StructField('o_carrier_id',LongType(),True),
+    StructField('o_ol_cnt',LongType(),True),
+    StructField('o_all_local',LongType(),True),
+    StructField('o_entry_d',LongType(),True)])
