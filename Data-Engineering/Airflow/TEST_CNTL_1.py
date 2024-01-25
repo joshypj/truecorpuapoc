@@ -14,7 +14,7 @@ default_args = {
     'retry_delay': timedelta(minutes=1),
 }
 dag = DAG(
-    'TEST_CNTL',
+    'TEST_CNTL_1',
     default_args=default_args,
     schedule_interval=None,
     tags=['cntl example','test', 'spark'],
