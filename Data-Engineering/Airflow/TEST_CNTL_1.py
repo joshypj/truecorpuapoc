@@ -44,10 +44,10 @@ task1 = PythonOperator(
 )
 
 
-task4 = PythonOperator(
+task2 = PythonOperator(
     task_id='end',
     python_callable=end_job,
     dag=dag,
 )
 
-task1>>task4
+task1>>task2
