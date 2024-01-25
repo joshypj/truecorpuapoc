@@ -1,4 +1,5 @@
 from datetime import datetime, timedelta
+
 from airflow import DAG
 from airflow.operators.python_operator import PythonOperator
 from airflow.models.param import Param
@@ -6,8 +7,11 @@ from airflow.utils.dates import days_ago
 from airflow.providers.cncf.kubernetes.operators.spark_kubernetes import SparkKubernetesOperator
 from airflow.providers.cncf.kubernetes.sensors.spark_kubernetes import SparkKubernetesSensor
 
+
+
+
 default_args = {
-    'owner': 'airflow',
+    'owner': 'airflow_CNTL',
     'depends_on_past': False,
     'start_date': days_ago(1),
     'retries': 1,
@@ -37,14 +41,14 @@ def start_job():
 def end_job():
     print("End Job")
 
-task1 = PythonOperator(
+task1 = PythonOperatorStart(
     task_id='start',
     python_callable=start_job,
     dag=dag,
 )
 
 
-task2 = PythonOperator(
+task2 = PythonOperatorEnd(
     task_id='end',
     python_callable=end_job,
     dag=dag,
