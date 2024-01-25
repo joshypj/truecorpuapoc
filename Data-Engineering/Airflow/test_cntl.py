@@ -52,18 +52,10 @@ task2=SparkKubernetesOperator(
     enable_impersonation_from_ldap_user=True
 )
 
-task3 = SparkKubernetesSensor(
-    task_id='ETL_TEST_monitor',
-    application_name="{{ task_instance.xcom_pull(task_ids='ETL_TEST')['metadata']['name'] }}",
-    dag=dag,
-    api_group="sparkoperator.hpe.com",
-    attach_log=True
-)
-
 task4 = PythonOperator(
     task_id='print_end',
     python_callable=end_job,
     dag=dag,
 )
 
-task1>>task2>>task3>>task4
+task1>>task2>>task4
