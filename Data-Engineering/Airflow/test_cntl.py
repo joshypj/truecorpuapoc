@@ -43,11 +43,27 @@ task1 = PythonOperator(
     dag=dag,
 )
 
+task2=SparkKubernetesOperator(
+    task_id='CNTL_ETL',
+    application_file="test_cntl.yaml",
+    do_xcom_push=True,
+    dag=dag,
+    api_group="sparkoperator.hpe.com",
+    enable_impersonation_from_ldap_user=True
+)
 
-task2 = PythonOperator(
+task3 = SparkKubernetesSensor(
+    task_id='CNTL_ETL_monitor',
+    application_name="{{ task_instance.xcom_pull(task_ids='CNTL_ETL')['metadata']['name'] }}",
+    dag=dag,
+    api_group="sparkoperator.hpe.com",
+    attach_log=True
+)
+
+task4 = PythonOperator(
     task_id='print_end',
     python_callable=end_job,
     dag=dag,
 )
 
-task1>>task2
+task1>>task2>>task3>>task4
