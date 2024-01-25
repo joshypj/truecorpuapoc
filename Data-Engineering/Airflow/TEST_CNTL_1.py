@@ -41,14 +41,14 @@ def start_job():
 def end_job():
     print("End Job")
 
-task1 = PythonOperatorStart(
+task1 = PythonOperator(
     task_id='start',
     python_callable=start_job,
     dag=dag,
 )
 
 
-task2 = PythonOperatorEnd(
+task2 = PythonOperator(
     task_id='end',
     python_callable=end_job,
     dag=dag,
