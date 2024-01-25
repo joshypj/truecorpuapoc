@@ -14,7 +14,7 @@ default_args = {
     'retry_delay': timedelta(minutes=1),
 }
 dag = DAG(
-    'Test_cntl',
+    'TEST_CNTL',
     default_args=default_args,
     schedule_interval=None,
     tags=['cntl example','test', 'spark'],
@@ -38,24 +38,16 @@ def end_job():
     print("End Job")
 
 task1 = PythonOperator(
-    task_id='print_start',
+    task_id='start',
     python_callable=start_job,
     dag=dag,
 )
 
-task2=SparkKubernetesOperator(
-    task_id='ETL_TEST',
-    application_file="test_cntl.yaml",
-    do_xcom_push=True,
-    dag=dag,
-    api_group="sparkoperator.hpe.com",
-    enable_impersonation_from_ldap_user=True
-)
 
 task4 = PythonOperator(
-    task_id='print_end',
+    task_id='end',
     python_callable=end_job,
     dag=dag,
 )
 
-task1>>task2>>task4
+task1>>task4
