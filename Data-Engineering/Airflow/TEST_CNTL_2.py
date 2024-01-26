@@ -21,7 +21,6 @@ default_args = {
 dag = DAG(
     'TEST_CNTL_1',
     default_args=default_args,
-    schedule_interval=None,
     tags=['cntl example','test', 'spark'],
     # params={
     #     'username': Param("hpedemo-user01", type="string"),
