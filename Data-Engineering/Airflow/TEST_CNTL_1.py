@@ -14,7 +14,7 @@ default_args = {
     'retry_delay': timedelta(minutes=1),
 }
 dag = DAG(
-    'Truecorp_spark-etl',
+    'test_cntl',
     default_args=default_args,
     description='Banking-data-demo',
     schedule_interval=None,
