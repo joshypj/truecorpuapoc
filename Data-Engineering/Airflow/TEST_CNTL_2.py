@@ -13,7 +13,7 @@ from airflow.providers.cncf.kubernetes.sensors.spark_kubernetes import SparkKube
 default_args = {
     'owner': 'airflow_CNTL',
     'depends_on_past': False,
-    'start_date': days_ago(1),
+    'start_date': datetime(2024,1,1),
     'retries': 1,
     'retry_delay': timedelta(minutes=1),
     'schedule_interval': 'None',
