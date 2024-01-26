@@ -56,14 +56,10 @@ task2=SparkKubernetesOperator(
     enable_impersonation_from_ldap_user=True
 )
 
-task2 = PythonOperator(
+task4 = PythonOperator(
     task_id='end',
     python_callable=end_job,
     dag=dag,
 )
 
-<<<<<<< HEAD
 task1>>task2>>task4
-=======
-task1>>task2
->>>>>>> a9c4ca1e7c47d5a6835a7cf6385a3f84a8a927a2
