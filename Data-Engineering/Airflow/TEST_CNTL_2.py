@@ -13,13 +13,13 @@ from airflow.providers.cncf.kubernetes.sensors.spark_kubernetes import SparkKube
 default_args = {
     'owner': 'airflow_CNTL',
     'depends_on_past': False,
-    'start_date': days_ago(1),
+    'start_date': datetime(2024,1,1),
     'retries': 1,
     'retry_delay': timedelta(minutes=1),
     'schedule_interval': 'None',
 }
 dag = DAG(
-    'TEST_CNTL_1',
+    'TEST_CNTL_2',
     default_args=default_args,
     schedule_interval=None,
     tags=['cntl example','test', 'spark'],
@@ -47,14 +47,7 @@ task1 = PythonOperator(
     python_callable=start_job,
     dag=dag,
 )
-task2=SparkKubernetesOperator(
-    task_id='Spark_etl_submit',
-    application_file="test_cntl.yaml",
-    do_xcom_push=True,
-    dag=dag,
-    api_group="sparkoperator.hpe.com",
-    enable_impersonation_from_ldap_user=True
-)
+
 
 task2 = PythonOperator(
     task_id='end',
@@ -62,8 +55,4 @@ task2 = PythonOperator(
     dag=dag,
 )
 
-<<<<<<< HEAD
-task1>>task2>>task4
-=======
 task1>>task2
->>>>>>> a9c4ca1e7c47d5a6835a7cf6385a3f84a8a927a2
