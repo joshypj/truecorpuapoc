@@ -16,6 +16,7 @@ default_args = {
     'start_date': days_ago(1),
     'retries': 1,
     'retry_delay': timedelta(minutes=1),
+    'schedule_interval': 'None',
 }
 dag = DAG(
     'TEST_CNTL_1',
