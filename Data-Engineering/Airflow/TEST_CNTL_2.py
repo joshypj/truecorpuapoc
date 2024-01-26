@@ -19,7 +19,7 @@ default_args = {
     'schedule_interval': 'None',
 }
 dag = DAG(
-    'TEST_CNTL_1',
+    'TEST_CNTL_2',
     default_args=default_args,
     tags=['cntl example','test', 'spark'],
     # params={
