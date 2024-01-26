@@ -42,7 +42,14 @@ task1 = PythonOperator(
     python_callable=start_job,
     dag=dag,
 )
-
+task2=SparkKubernetesOperator(
+    task_id='Spark_etl_submit',
+    application_file="test_cntl.yaml",
+    do_xcom_push=True,
+    dag=dag,
+    api_group="sparkoperator.hpe.com",
+    enable_impersonation_from_ldap_user=True
+)
 
 task4 = PythonOperator(
     task_id='end',
@@ -50,4 +57,4 @@ task4 = PythonOperator(
     dag=dag,
 )
 
-task1>>task4
+task1>>task2>>task4
