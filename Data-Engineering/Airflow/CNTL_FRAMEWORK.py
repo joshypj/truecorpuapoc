@@ -32,7 +32,8 @@ dag = DAG(
 )
 
 def _get_strem(**kwargs):
-    return kwargs['params']['STREM_NM']
+    strem_nm =  kwargs['params']['STREM_NM']
+    kwargs['ti'].do_xcom_push(key = 'strem_nm',value = strem_nm)
 
 def start_job():
     print("Start ETL by Query...")
