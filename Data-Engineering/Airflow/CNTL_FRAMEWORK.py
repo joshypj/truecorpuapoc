@@ -59,7 +59,6 @@ task2 = SparkKubernetesOperator(
     dag=dag,
     api_group="sparkoperator.hpe.com",
     enable_impersonation_from_ldap_user=True,
-    templates_dict={'STREM_NM': "{{ ti.xcom_pull(task_ids='get_strem_nm') }}"},
     env_vars={'STREM_NM': "{{ STREM_NM }}"}
 )
 
