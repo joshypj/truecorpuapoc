@@ -31,6 +31,9 @@ dag = DAG(
     }
 )
 
+def _get_strem(**kwargs):
+    STREM_NM = kwargs['params']['STREM_NM']
+
 def start_job():
     print("Start ETL by Query...")
 
@@ -42,6 +45,13 @@ task1 = PythonOperator(
     python_callable=start_job,
     dag=dag,
 )
+
+get_strem = PythonOperator(
+    task_id='get_strem_nm',
+    python_callable=_get_strem,
+    dag=dag,
+)
+
 task2=SparkKubernetesOperator(
     task_id='Spark_etl_submit',
     application_file="CNTL_FRAMEWORK.yaml",
@@ -65,4 +75,4 @@ task4 = PythonOperator(
     dag=dag,
 )
 
-task1>>task2>>task3>>task4
+task1>>get_strem>>task2>>task3>>task4
