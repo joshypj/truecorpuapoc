@@ -49,5 +49,7 @@ spec:
     memory: "1000M"
     labels:
       version: 3.4.0
-    envVars:
-      STREM_NM: "{{ .Values.strem_nm }}"
+  arguments:
+    # Define your arguments here
+    - "--stream_name"
+    - "{{ .Values.params.STREM_NM }}"
