@@ -20,7 +20,7 @@ default_args = {
     'retry_delay': timedelta(minutes=1),
 }
 dag = DAG(
-    'ls_example',
+    'test_bash',
     default_args=default_args,
     description='Banking-data-demo',
     schedule_interval=None,
