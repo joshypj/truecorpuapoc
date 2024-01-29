@@ -32,7 +32,7 @@ spec:
   mode: cluster
   image: "gcr.io/mapr-252711/spark-3.4.0:v3.4.0"
   imagePullPolicy: Always
-  mainApplicationFile: "local:///mnt/shared/toh/FRAMEWORK.py"
+  mainApplicationFile: "local:///mnt/shared/toh/Framework.py"
   restartPolicy:
     type: Never
   imagePullSecrets:
