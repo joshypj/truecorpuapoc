@@ -38,7 +38,7 @@ def print_xcom_data(**kwargs):
 # Define the BashOperator to run the ls command
 run_ls_command = BashOperator(
     task_id='run_ls_command',
-    bash_command='ls /mnt/user',
+    bash_command='ls /mnt/user/temp',
     dag=dag,
 )
 
