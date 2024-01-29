@@ -31,10 +31,6 @@ dag = DAG(
     }
 )
 
-def _get_strem(**kwargs):
-    strem_nm =  kwargs['params']['STREM_NM']
-    kwargs['ti'].do_xcom_push(key = 'strem_nm',value = strem_nm)
-
 def start_job():
     print("Start ETL by Query...")
 
@@ -47,15 +43,6 @@ task1 = PythonOperator(
     dag=dag,
 )
 
-get_strem = PythonOperator(
-    task_id='get_strem_nm',
-    python_callable=_get_strem,
-    dag=dag,
-)
-
-# Defining arguments for SparkKubernetesOperator
-argument_to_pass = {'strem_nm': '{{ ti.xcom_pull(task_ids="get_strem_nm") }}'}
-
 task2 = SparkKubernetesOperator(
     task_id='Spark_etl_submit',
     application_file="CNTL_FRAMEWORK.yaml",
@@ -63,7 +50,7 @@ task2 = SparkKubernetesOperator(
     dag=dag,
     api_group="sparkoperator.hpe.com",
     enable_impersonation_from_ldap_user=True,
-    arguments=argument_to_pass 
+    arguments={'params': dag.params}
 )
 
 task3 = SparkKubernetesSensor(
@@ -80,4 +67,4 @@ task4 = PythonOperator(
     dag=dag,
 )
 
-task1 >> get_strem >> task2 >> task3 >> task4
+task1 >> task2 >> task3 >> task4
