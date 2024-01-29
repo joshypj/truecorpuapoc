@@ -28,7 +28,14 @@ dag = DAG(
     'ls_example',
     default_args=default_args,
     description='A simple DAG to run ls command and print XCom data',
-    schedule_interval='@daily',
+    schedule_interval=None,
+    access_control={
+        'All': {
+            'can_read',
+            'can_edit',
+            'can_delete'
+        }
+    }
 )
 
 # Define the BashOperator to run the ls command and push the result to XCom
