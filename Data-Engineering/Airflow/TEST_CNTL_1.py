@@ -14,7 +14,7 @@ default_args = {
     'retry_delay': timedelta(minutes=1),
 }
 dag = DAG(
-    'TEST_CNTL_1',
+    'TEST_CNTL_1.1',
     default_args=default_args,
     description='Banking-data-demo',
     schedule_interval=None,
