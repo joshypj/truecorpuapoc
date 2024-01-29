@@ -1,11 +1,8 @@
 from datetime import datetime, timedelta
 from airflow import DAG
-from airflow.operators.python_operator import PythonOperator
 from airflow.operators.bash_operator import BashOperator
-from airflow.models.param import Param
+from airflow.operators.python_operator import PythonOperator
 from airflow.utils.dates import days_ago
-from airflow.providers.cncf.kubernetes.operators.spark_kubernetes import SparkKubernetesOperator
-from airflow.providers.cncf.kubernetes.sensors.spark_kubernetes import SparkKubernetesSensor
 
 # Define a Python function to print XCom data
 def print_xcom_data(**kwargs):
@@ -20,16 +17,13 @@ default_args = {
     'retries': 1,
     'retry_delay': timedelta(minutes=1),
 }
+
 dag = DAG(
     'test_bash',
     default_args=default_args,
-    description='Banking-data-demo',
+    description='A DAG to demonstrate the use of BashOperator and PythonOperator in Airflow',
     schedule_interval=None,
-    tags=['e2e example','ETL', 'spark'],
-    # params={
-    #     'username': Param("hpedemo-user01", type="string"),
-    #     's3_secret_name': Param("spark-s3-creds", type="string")
-    # },
+    tags=['e2e example', 'ETL', 'spark'],
     access_control={
         'All': {
             'can_read',
@@ -39,12 +33,10 @@ dag = DAG(
     }
 )
 
-
-# Define the BashOperator to run the ls command and push the result to XCom
+# Define the BashOperator to run the ls command
 run_ls_command = BashOperator(
     task_id='run_ls_command',
     bash_command='ls',
-    xcom_push=True,  # Push the output of the command to XCom
     dag=dag,
 )
 
