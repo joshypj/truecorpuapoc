@@ -1,7 +1,7 @@
 from datetime import datetime, timedelta
 from airflow import DAG
 from airflow.operators.python_operator import PythonOperator
-from airflow.models.param import Param
+from airflow.models import Param
 from airflow.utils.dates import days_ago
 from airflow.providers.cncf.kubernetes.operators.spark_kubernetes import SparkKubernetesOperator
 from airflow.providers.cncf.kubernetes.sensors.spark_kubernetes import SparkKubernetesSensor
@@ -16,9 +16,9 @@ default_args = {
 dag = DAG(
     'CNTL_FRAMEWORK',
     default_args=default_args,
-    description='Running Strem',
+    description='Running Stream',
     schedule_interval=None,
-    tags=['e2e example','ETL', 'spark'],
+    tags=['e2e example', 'ETL', 'spark'],
     params={
         'STREM_NM': Param("X3_TEST_99_D", type="string"),
     },
@@ -32,7 +32,7 @@ dag = DAG(
 )
 
 def _get_strem(**kwargs):
-    STREM_NM = kwargs['params']['STREM_NM']
+    return kwargs['params']['STREM_NM']
 
 def start_job():
     print("Start ETL by Query...")
@@ -52,19 +52,24 @@ get_strem = PythonOperator(
     dag=dag,
 )
 
-task2=SparkKubernetesOperator(
+def pass_strem_nm(**kwargs):
+    ti = kwargs['ti']
+    strem_nm = ti.xcom_pull(task_ids='get_strem_nm')
+    return strem_nm
+
+task2 = SparkKubernetesOperator(
     task_id='Spark_etl_submit',
     application_file="CNTL_FRAMEWORK.yaml",
     do_xcom_push=True,
     dag=dag,
     api_group="sparkoperator.hpe.com",
     enable_impersonation_from_ldap_user=True,
-    env_vars={'STREM_NM': "{{ task_instance.xcom_pull(task_ids='get_strem_nm') }}"}
+    env_vars={'STREM_NM': "{{ ti.xcom_pull(task_ids='get_strem_nm') }}"},
 )
 
 task3 = SparkKubernetesSensor(
     task_id='Spark_etl_monitor',
-    application_name="{{ task_instance.xcom_pull(task_ids='Spark_etl_submit')['metadata']['name'] }}",
+    application_name="{{ ti.xcom_pull(task_ids='Spark_etl_submit')['metadata']['name'] }}",
     dag=dag,
     api_group="sparkoperator.hpe.com",
     attach_log=True
@@ -76,4 +81,4 @@ task4 = PythonOperator(
     dag=dag,
 )
 
-task1>>get_strem>>task2>>task3>>task4
+task1 >> get_strem >> task2 >> task3 >> task4
