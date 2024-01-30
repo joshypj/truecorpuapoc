@@ -73,7 +73,6 @@ task2 = SparkKubernetesOperator(
     task_id='Spark_etl_submit',
     application_file="CNTL_FRAMEWORK.yaml",
     do_xcom_push=True,
-    dag=dag,
     api_group="sparkoperator.hpe.com",
     enable_impersonation_from_ldap_user=True,
     Params = _get_arguments,
