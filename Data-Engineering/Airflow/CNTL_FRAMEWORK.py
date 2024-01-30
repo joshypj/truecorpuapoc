@@ -43,6 +43,19 @@ task1 = PythonOperator(
     dag=dag,
 )
 
+def _set_arguments(**kwargs) :
+    arguments_to_pass = {
+        'strem_nm': kwargs['dag_run'].conf.get('STREM_NM')
+    }
+    return arguments_to_pass
+
+set_arguments = PythonOperator(
+    task_id='set_arguments',
+    python_callable=_set_arguments,
+    dag=dag,
+)
+
+
 task2 = SparkKubernetesOperator(
     task_id='Spark_etl_submit',
     application_file="CNTL_FRAMEWORK.yaml",
@@ -50,6 +63,7 @@ task2 = SparkKubernetesOperator(
     dag=dag,
     api_group="sparkoperator.hpe.com",
     enable_impersonation_from_ldap_user=True,
+    params = arguments_to_pass
 )
 
 task3 = SparkKubernetesSensor(
@@ -66,4 +80,4 @@ task4 = PythonOperator(
     dag=dag,
 )
 
-task1 >> task2 >> task3 >> task4
+task1 >> set_arguments >> task2 >> task3 >> task4
