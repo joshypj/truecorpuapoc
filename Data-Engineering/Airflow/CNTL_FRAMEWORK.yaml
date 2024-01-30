@@ -45,7 +45,7 @@ spec:
       version: 3.4.0
     env:
       - name: STREM_NM
-        value: "X3_TEST_99_D"
+        value: "{{ params.stream_name }}"
 
   executor:
     cores: 2
