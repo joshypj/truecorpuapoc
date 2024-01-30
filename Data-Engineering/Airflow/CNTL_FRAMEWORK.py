@@ -66,7 +66,11 @@ def _get_arguments(**kwargs):
     ti = kwargs['ti']
     arguments_to_pass = ti.xcom_pull(task_ids='set_arguments')
     print(arguments_to_pass)
-    return {'strem_nm':arguments_to_pass}
+    return arguments_to_pass
+
+arguments_to_pass = {
+    'id': '1'
+}
 
 task2 = SparkKubernetesOperator(
     task_id='Spark_etl_submit',
@@ -75,7 +79,7 @@ task2 = SparkKubernetesOperator(
     dag=dag,
     api_group="sparkoperator.hpe.com",
     enable_impersonation_from_ldap_user=True,
-    #  = _get_arguments, # Pass the function directly to arguments
+    Params = arguments_to_pass, # Pass the function directly to arguments
 )
 
 task3 = SparkKubernetesSensor(
