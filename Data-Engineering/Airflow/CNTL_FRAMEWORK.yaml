@@ -45,7 +45,7 @@ spec:
       version: 3.4.0
     env:
       - name: STREM_NM
-        value: "{{ params.strem_name }}"
+        value: "{{ params.STREM_NM }}"
 
   executor:
     cores: 2
