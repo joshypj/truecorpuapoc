@@ -43,12 +43,23 @@ task1 = PythonOperator(
     dag=dag,
 )
 
-def _set_arguments(**kwargs) :
+def _set_arguments(**kwargs):
     arguments_to_pass = {
         'strem_nm': kwargs['dag_run'].conf.get('STREM_NM')
     }
-    return arguments_to_pass
+    kwargs['ti'].xcom_push(key='arguments_to_pass', value=arguments_to_pass)
 
+set_arguments = PythonOperator(
+    task_id='set_arguments',
+    python_callable=_set_arguments,
+    provide_context=True,
+    dag=dag,
+)
+
+def _get_arguments(**kwargs):
+    ti = kwargs['ti']
+    arguments_to_pass = ti.xcom_pull(task_ids='set_arguments', key='arguments_to_pass')
+    return arguments_to_pass['strem_nm'] 
 
 task2 = SparkKubernetesOperator(
     task_id='Spark_etl_submit',
@@ -57,7 +68,7 @@ task2 = SparkKubernetesOperator(
     dag=dag,
     api_group="sparkoperator.hpe.com",
     enable_impersonation_from_ldap_user=True,
-    params = _set_arguments
+    params = _get_arguments
 )
 
 task3 = SparkKubernetesSensor(
