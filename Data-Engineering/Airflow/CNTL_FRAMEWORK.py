@@ -85,7 +85,8 @@ task3 = SparkKubernetesSensor(
     application_name="{{ ti.xcom_pull(task_ids='Spark_etl_submit')['metadata']['name'] }}",
     dag=dag,
     api_group="sparkoperator.hpe.com",
-    attach_log=True
+    attach_log=True,
+    do_xcom_push=True,
 )
 
 task4 = PythonOperator(
