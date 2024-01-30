@@ -52,4 +52,4 @@ spec:
   arguments:
     # Define your arguments here
     - "--stream_name"
-    - "{{ .Values.params.STREM_NM }}"
+    - "{{ Values.params.STREM_NM }}"
