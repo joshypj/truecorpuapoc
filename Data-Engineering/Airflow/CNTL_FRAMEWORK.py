@@ -68,9 +68,6 @@ def _get_arguments(**kwargs):
     print(arguments_to_pass)
     return arguments_to_pass
 
-arguments_to_pass = {
-    'id': '1'
-}
 
 task2 = SparkKubernetesOperator(
     task_id='Spark_etl_submit',
@@ -79,7 +76,6 @@ task2 = SparkKubernetesOperator(
     dag=dag,
     api_group="sparkoperator.hpe.com",
     enable_impersonation_from_ldap_user=True,
-    **arguments_to_pass, # Pass the function directly to arguments
 )
 
 task3 = SparkKubernetesSensor(
