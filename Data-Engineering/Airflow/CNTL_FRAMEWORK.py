@@ -68,7 +68,7 @@ def _get_arguments(**kwargs):
     print(arguments_to_pass)
     return arguments_to_pass['strem_nm']
 
-argument_to_pass = {'strem_nm' : "TEST"}
+# argument_to_pass = {'strem_nm' : "TEST"}
 
 task2 = SparkKubernetesOperator(
     task_id='Spark_etl_submit',
@@ -76,7 +76,7 @@ task2 = SparkKubernetesOperator(
     do_xcom_push=True,
     api_group="sparkoperator.hpe.com",
     enable_impersonation_from_ldap_user=True,
-    **argument_to_pass,
+    params = {'strem_nm' : "TEST"},
     dag = dag,
 )
 
