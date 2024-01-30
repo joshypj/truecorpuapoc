@@ -1,3 +1,4 @@
+# Import required modules
 from datetime import datetime, timedelta
 from airflow import DAG
 from airflow.operators.python_operator import PythonOperator
@@ -6,6 +7,7 @@ from airflow.utils.dates import days_ago
 from airflow.providers.cncf.kubernetes.operators.spark_kubernetes import SparkKubernetesOperator
 from airflow.providers.cncf.kubernetes.sensors.spark_kubernetes import SparkKubernetesSensor
 
+# Define default arguments
 default_args = {
     'owner': 'airflow',
     'depends_on_past': False,
@@ -13,6 +15,8 @@ default_args = {
     'retries': 1,
     'retry_delay': timedelta(minutes=1),
 }
+
+# Define the DAG
 dag = DAG(
     'CNTL_FRAMEWORK',
     default_args=default_args,
@@ -31,12 +35,14 @@ dag = DAG(
     }
 )
 
+# Define Python functions
 def start_job():
     print("Start ETL by Query...")
 
 def end_job():
     print("Data insert to Table Done...")
 
+# Define the tasks
 task1 = PythonOperator(
     task_id='Start_Data_Reading',
     python_callable=start_job,
@@ -47,7 +53,7 @@ def _set_arguments(**kwargs):
     arguments_to_pass = {
         'strem_nm': kwargs['dag_run'].conf.get('STREM_NM')
     }
-    kwargs['ti'].xcom_push(key='arguments_to_pass', value=arguments_to_pass)
+    return arguments_to_pass
 
 set_arguments = PythonOperator(
     task_id='set_arguments',
@@ -58,7 +64,7 @@ set_arguments = PythonOperator(
 
 def _get_arguments(**kwargs):
     ti = kwargs['ti']
-    arguments_to_pass = ti.xcom_pull(task_ids='set_arguments', key='arguments_to_pass')
+    arguments_to_pass = ti.xcom_pull(task_ids='set_arguments')
     return arguments_to_pass['strem_nm'] 
 
 task2 = SparkKubernetesOperator(
@@ -68,7 +74,7 @@ task2 = SparkKubernetesOperator(
     dag=dag,
     api_group="sparkoperator.hpe.com",
     enable_impersonation_from_ldap_user=True,
-    params = _get_arguments
+    arguments=_get_arguments  # Pass the function directly to arguments
 )
 
 task3 = SparkKubernetesSensor(
@@ -85,4 +91,5 @@ task4 = PythonOperator(
     dag=dag,
 )
 
+# Define task dependencies
 task1 >> task2 >> task3 >> task4
