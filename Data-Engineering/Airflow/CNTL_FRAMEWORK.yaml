@@ -49,4 +49,3 @@ spec:
     memory: "1000M"
     labels:
       version: 3.4.0
-  arguments: ["--id={{ params.id }}"]

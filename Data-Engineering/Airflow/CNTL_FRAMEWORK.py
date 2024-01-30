@@ -93,4 +93,4 @@ task4 = PythonOperator(
 )
 
 # Define task dependencies
-task1 >> task2 >> task3 >> task4
+task1 >>set_arguments>> task2 >> task3 >> task4
