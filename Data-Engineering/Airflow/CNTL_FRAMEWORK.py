@@ -77,7 +77,6 @@ task2 = SparkKubernetesOperator(
     api_group="sparkoperator.hpe.com",
     enable_impersonation_from_ldap_user=True,
     dag = dag,
-    context = {'strem_nm':'TEST'}
 )
 
 task3 = SparkKubernetesSensor(
