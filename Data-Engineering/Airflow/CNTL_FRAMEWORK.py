@@ -79,7 +79,7 @@ task2 = SparkKubernetesOperator(
     dag=dag,
     api_group="sparkoperator.hpe.com",
     enable_impersonation_from_ldap_user=True,
-    Params = arguments_to_pass, # Pass the function directly to arguments
+    kubernetes_executor_config = arguments_to_pass, # Pass the function directly to arguments
 )
 
 task3 = SparkKubernetesSensor(
