@@ -6,12 +6,7 @@ from airflow.models import Param
 from airflow.utils.dates import days_ago
 from airflow.providers.cncf.kubernetes.operators.spark_kubernetes import SparkKubernetesOperator
 from airflow.providers.cncf.kubernetes.sensors.spark_kubernetes import SparkKubernetesSensor
-from pyspark.sql import SparkSession
-from py4j.java_gateway import java_import
-java_import(spark._sc._jvm, "org.apache.spark.sql.api.python.*")
-from delta.tables import DeltaTable
-from pyspark.sql.types import StructType, StructField, StringType,DateType
-from pyspark.sql.functions import to_date,col,when  
+
 
 
 
@@ -52,6 +47,12 @@ configuration = {"conf": {"spark.driver.cores": 2
          }}
 
 def execute_spark_task(**kwargs):
+    from pyspark.sql import SparkSession
+    from py4j.java_gateway import java_import
+    java_import(spark._sc._jvm, "org.apache.spark.sql.api.python.*")
+    from delta.tables import DeltaTable
+    from pyspark.sql.types import StructType, StructField, StringType,DateType
+    from pyspark.sql.functions import to_date,col,when  
     # Extract configuration from kwargs
     strem_nm = kwargs['dag_run'].conf.get('STREM_NM')
     
