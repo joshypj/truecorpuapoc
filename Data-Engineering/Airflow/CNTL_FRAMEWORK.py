@@ -56,7 +56,7 @@ def condition(**kwargs):
         return 'taskB'
 
 def submit_spark_etl(**kwargs):
-    parameter_value = kwargs['ti'].xcom_pull(task_ids='read_file')
+    parameter_value = kwargs['ti'].xcom_pull(task_ids='read_file', key='file_content'))
     spark_operator = SparkKubernetesOperator(
         task_id='Spark_etl_submit',
         application_file="test_cntl.yaml",
