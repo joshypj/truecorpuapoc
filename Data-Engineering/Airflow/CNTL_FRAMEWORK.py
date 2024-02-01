@@ -1,12 +1,10 @@
-# Import required modules
 from datetime import datetime, timedelta
 from airflow import DAG
-from airflow.operators.python_operator import PythonOperator
+from airflow.operators.python_operator import PythonOperator, BranchPythonOperator
 from airflow.models import Param
 from airflow.utils.dates import days_ago
 from airflow.providers.cncf.kubernetes.operators.spark_kubernetes import SparkKubernetesOperator
 from airflow.providers.cncf.kubernetes.sensors.spark_kubernetes import SparkKubernetesSensor
-from airflow.operators.python_operator import BranchPythonOperator
 
 # Define default arguments
 default_args = {
@@ -24,16 +22,8 @@ dag = DAG(
     description='Running Stream',
     schedule_interval=None,
     tags=['e2e example', 'ETL', 'spark'],
-    params={
-        'STREM_NM': Param("X3_TEST_99_D", type="string"),
-    },
-    access_control={
-        'All': {
-            'can_read',
-            'can_edit',
-            'can_delete'
-        }
-    }
+    params={'STREM_NM': Param("X3_TEST_99_D", type="string")},
+    access_control={'All': {'can_read', 'can_edit', 'can_delete'}}
 )
 
 # Define Python functions
@@ -42,6 +32,40 @@ def start_job():
 
 def end_job():
     print("Data insert to Table Done...")
+
+def read_and_print_file(**kwargs):
+    ti = kwargs['ti']
+    file_path = '/mnt/shared/Toh/Queue.txt'  # Change this to your file path
+    try:
+        with open(file_path, 'r') as file:
+            file_content = file.read()
+            print("Content of the file:")
+            print(file_content)
+            ti.xcom_push(key='file_content', value=file_content)
+    except FileNotFoundError:
+        print(f"File not found at {file_path}")
+
+def condition(**kwargs):
+    parm = kwargs['ti'].xcom_pull(task_ids='read_file', key='file_content')
+    type = parm.split('^|')[-1]
+
+    if type == '1':
+        return 'taskA'
+    else:
+        return 'taskB'
+
+def submit_spark_etl(**kwargs):
+    parameter_value = kwargs['ti'].xcom_pull(task_ids='read_file')
+    spark_operator = SparkKubernetesOperator(
+        task_id='Spark_etl_submit',
+        application_file="test_cntl.yaml",
+        do_xcom_push=True,
+        api_group="sparkoperator.hpe.com",
+        enable_impersonation_from_ldap_user=True,
+        dag=dag,
+        parameters={"parm": parameter_value.split('^|')[1]}
+    )
+    return 'Spark_etl_submit'
 
 # Define the tasks
 task1 = PythonOperator(
@@ -56,7 +80,7 @@ task2 = SparkKubernetesOperator(
     do_xcom_push=True,
     api_group="sparkoperator.hpe.com",
     enable_impersonation_from_ldap_user=True,
-    dag = dag,
+    dag=dag,
 )
 
 task3 = SparkKubernetesSensor(
@@ -68,19 +92,6 @@ task3 = SparkKubernetesSensor(
     do_xcom_push=True,
 )
 
-def read_and_print_file(**kwargs):
-    ti = kwargs['ti']
-    file_path = '/mnt/shared/Toh/Queue.txt'  # Change this to your file path
-    try:
-        with open(file_path, 'r') as file:
-            file_content = file.read()
-            print("Content of the file:")
-            print(file_content)
-            ti.xcom_push(key='file_content', value=file_content)
-    except FileNotFoundError:
-        print(f"File not found at {file_path}")
-
-# Define the PythonOperator to read the text file and print its content
 read_file_task = PythonOperator(
     task_id='read_file',
     python_callable=read_and_print_file,
@@ -88,43 +99,21 @@ read_file_task = PythonOperator(
     dag=dag,
 )
 
-
-def condition(**kwargs):
-    # Your condition logic goes here
-    parm = kwargs['ti'].xcom_pull(task_ids='read_file',key = 'file_content')
-    type = parm.split('^|')[-1]
-
-    if type == '1' :
-        return 'task_A'
-    else:
-        return 'task_B'
-
 branching_task = BranchPythonOperator(
     task_id='branching_task',
     python_callable=condition,
     dag=dag,
 )
 
-def submit_spark_etl(**kwargs):
-    parameter_value = kwargs['ti'].xcom_pull(task_ids='read_file')
-    # Use the parameter_value to set up SparkKubernetesOperator
-    spark_operator = SparkKubernetesOperator(
-        task_id='Spark_etl_submit',
-        application_file="test_cntl.yaml",
-        do_xcom_push=True,
-        api_group="sparkoperator.hpe.com",
-        enable_impersonation_from_ldap_user=True,
-        dag=dag,
-        # Pass parameters obtained from XCom to the SparkOperator
-        # For example:
-        parameters={"parm": parameter_value.split('^|')[1]}
-    )
-    return 'Spark_etl_submit'
-
 taskA = PythonOperator(
     task_id='taskA',
     python_callable=submit_spark_etl,
     provide_context=True,
+    dag=dag,
+)
+
+taskB = DummyOperator(
+    task_id='taskB',
     dag=dag,
 )
 
@@ -144,6 +133,8 @@ task4 = PythonOperator(
 )
 
 # Define task dependencies
-task1 >> task2 >> task3 >> read_file_task>> branching_task >> [taskA]
+task1 >> task2 >> task3 >> read_file_task >> branching_task
+branching_task >> taskA
+branching_task >> taskB
 taskA >> taskAmonitor >> task4
-
+taskB >> task4
