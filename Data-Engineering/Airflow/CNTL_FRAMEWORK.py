@@ -6,6 +6,7 @@ from airflow.models import Param
 from airflow.utils.dates import days_ago
 from airflow.providers.cncf.kubernetes.operators.spark_kubernetes import SparkKubernetesOperator
 from airflow.providers.cncf.kubernetes.sensors.spark_kubernetes import SparkKubernetesSensor
+from airflow.operators.python_operator import BranchPythonOperator
 
 # Define default arguments
 default_args = {
@@ -88,6 +89,53 @@ read_file_task = PythonOperator(
 )
 
 
+def condition(**kwargs):
+    # Your condition logic goes here
+    parm = kwargs['ti'].xcom_pull(task_ids='read_file')
+    type = parm.split('^|')[-1]
+
+    if type == '1' :
+        return 'task_A'
+    else:
+        return 'task_B'
+
+branching_task = BranchPythonOperator(
+    task_id='branching_task',
+    python_callable=condition,
+    dag=dag,
+)
+
+def submit_spark_etl(**kwargs):
+    parameter_value = kwargs['ti'].xcom_pull(task_ids='read_file')
+    # Use the parameter_value to set up SparkKubernetesOperator
+    spark_operator = SparkKubernetesOperator(
+        task_id='Spark_etl_submit',
+        application_file="test_cntl.yaml",
+        do_xcom_push=True,
+        api_group="sparkoperator.hpe.com",
+        enable_impersonation_from_ldap_user=True,
+        dag=dag,
+        # Pass parameters obtained from XCom to the SparkOperator
+        # For example:
+        parameters={"parm": parameter_value.split('^|')[1]}
+    )
+    return 'Spark_etl_submit'
+
+taskA = PythonOperator(
+    task_id='taskA',
+    python_callable=submit_spark_etl,
+    provide_context=True,
+    dag=dag,
+)
+
+taskAmonitor = SparkKubernetesSensor(
+    task_id='Spark_etl_monitor',
+    application_name="{{ ti.xcom_pull(task_ids='Spark_etl_submit')['metadata']['name'] }}",
+    dag=dag,
+    api_group="sparkoperator.hpe.com",
+    attach_log=True,
+    do_xcom_push=True,
+)
 
 task4 = PythonOperator(
     task_id='Data_Loading_Done',
@@ -96,4 +144,6 @@ task4 = PythonOperator(
 )
 
 # Define task dependencies
-task1 >> task2 >> task3 >> read_file_task>> task4
+task1 >> task2 >> task3 >> read_file_task>> branching_task >> [taskA]
+taskA >> taskAmonitor >> task4
+
