@@ -129,7 +129,7 @@ taskA = PythonOperator(
 )
 
 taskAmonitor = SparkKubernetesSensor(
-    task_id='Spark_etl_monitor',
+    task_id='taskA_monitor',
     application_name="{{ ti.xcom_pull(task_ids='Spark_etl_submit')['metadata']['name'] }}",
     dag=dag,
     api_group="sparkoperator.hpe.com",
