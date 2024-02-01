@@ -64,7 +64,7 @@ def submit_spark_etl(**kwargs):
         api_group="sparkoperator.hpe.com",
         enable_impersonation_from_ldap_user=True,
         dag=dag,
-        parameters={"parm": parameter_value.split('^|')[1]}
+        parameters= parameter_value.split('^|')[1]
     )
     return 'Spark_etl_submit'
 
