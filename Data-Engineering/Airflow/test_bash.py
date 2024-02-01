@@ -29,26 +29,25 @@ dag = DAG(
     }
 )
 
-# Define a Python function to print XCom data
-def print_xcom_data(**kwargs):
+# Define a Python function to read a text file and print its content
+def read_and_print_file(**kwargs):
     ti = kwargs['ti']
-    ls_output = ti.xcom_pull(task_ids='run_ls_command')
-    print("Output of 'ls' command:", ls_output)
+    file_path = '/mnt/shared/Toh/Queue.txt'  # Change this to your file path
+    try:
+        with open(file_path, 'r') as file:
+            file_content = file.read()
+            print("Content of the file:")
+            print(file_content)
+            ti.xcom_push(key='file_content', value=file_content)
+    except FileNotFoundError:
+        print(f"File not found at {file_path}")
 
-# Define the BashOperator to run the ls command
-run_ls_command = BashOperator(
-    task_id='run_ls_command',
-    bash_command='ls /mnt/ezadmin/temp',
-    dag=dag,
-)
-
-# Define the PythonOperator to print XCom data
-print_xcom = PythonOperator(
-    task_id='print_xcom_data',
-    python_callable=print_xcom_data,
+# Define the PythonOperator to read the text file and print its content
+read_file_task = PythonOperator(
+    task_id='read_file',
+    python_callable=read_and_print_file,
     provide_context=True,
     dag=dag,
 )
 
-# Set task dependencies
-run_ls_command >> print_xcom
+read_file_task
