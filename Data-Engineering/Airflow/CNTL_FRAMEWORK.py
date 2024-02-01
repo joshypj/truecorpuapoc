@@ -6,7 +6,6 @@ from airflow.models import Param
 from airflow.utils.dates import days_ago
 from airflow.providers.cncf.kubernetes.operators.spark_kubernetes import SparkKubernetesOperator
 from airflow.providers.cncf.kubernetes.sensors.spark_kubernetes import SparkKubernetesSensor
-from airflow.models import XCom
 
 # Define default arguments
 default_args = {
@@ -50,27 +49,6 @@ task1 = PythonOperator(
     dag=dag,
 )
 
-def _set_arguments(**kwargs):
-    arguments_to_pass = {
-        'strem_nm': kwargs['dag_run'].conf.get('STREM_NM')
-    }
-    return arguments_to_pass
-
-set_arguments = PythonOperator(
-    task_id='set_arguments',
-    python_callable=_set_arguments,
-    provide_context=True,
-    dag=dag,
-)
-
-def _get_arguments(**kwargs):
-    ti = kwargs['ti']
-    arguments_to_pass = ti.xcom_pull(task_ids='set_arguments')
-    print(arguments_to_pass)
-    return arguments_to_pass['strem_nm']
-
-# argument_to_pass = {'strem_nm' : "TEST"}
-
 task2 = SparkKubernetesOperator(
     task_id='Spark_etl_submit',
     application_file="CNTL_FRAMEWORK.yaml",
@@ -89,6 +67,28 @@ task3 = SparkKubernetesSensor(
     do_xcom_push=True,
 )
 
+def read_and_print_file(**kwargs):
+    ti = kwargs['ti']
+    file_path = '/mnt/shared/Toh/Queue.txt'  # Change this to your file path
+    try:
+        with open(file_path, 'r') as file:
+            file_content = file.read()
+            print("Content of the file:")
+            print(file_content)
+            ti.xcom_push(key='file_content', value=file_content)
+    except FileNotFoundError:
+        print(f"File not found at {file_path}")
+
+# Define the PythonOperator to read the text file and print its content
+read_file_task = PythonOperator(
+    task_id='read_file',
+    python_callable=read_and_print_file,
+    provide_context=True,
+    dag=dag,
+)
+
+
+
 task4 = PythonOperator(
     task_id='Data_Loading_Done',
     python_callable=end_job,
@@ -96,4 +96,4 @@ task4 = PythonOperator(
 )
 
 # Define task dependencies
-task1 >>set_arguments>> task2 >> task3 >> task4
+task1 >> task2 >> task3 >> read_file_task>> task4
