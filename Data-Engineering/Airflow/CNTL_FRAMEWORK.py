@@ -91,7 +91,7 @@ read_file_task = PythonOperator(
 
 def condition(**kwargs):
     # Your condition logic goes here
-    parm = kwargs['ti'].xcom_pull(task_ids='read_file')
+    parm = kwargs['ti'].xcom_pull(task_ids='read_file',key = 'file_content')
     type = parm.split('^|')[-1]
 
     if type == '1' :
