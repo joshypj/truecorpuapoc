@@ -41,10 +41,10 @@ spec:
     coreLimit: "2000m"
     memory: "1000M"
     labels:
-      version: 3.4.0
+      version: 3.5.0
   executor:
     cores: 2
     coreLimit: "2000m"
     memory: "1000M"
     labels:
-      version: 3.4.0
+      version: 3.5.0
