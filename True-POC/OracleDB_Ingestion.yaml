@@ -27,7 +27,7 @@ spec:
     spark.driver.extraClassPath: "/mounts/shared-volume/shared/sparkjars/ojdbc8.jar"
     spark.executor.extraClassPath: "/mounts/shared-volume/shared/sparkjars/ojdbc8.jar"
   type: Python
-  sparkVersion: 3.4.0
+  sparkVersion: 3.5.0
   mode: cluster
   image: "gcr.io/mapr-252711/spark-3.5.0:v3.5.0"
   imagePullPolicy: Always
