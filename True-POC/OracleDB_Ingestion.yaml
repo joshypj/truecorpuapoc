@@ -1,0 +1,50 @@
+apiVersion: "sparkoperator.hpe.com/v1beta2"
+kind: SparkApplication
+metadata:
+  name: spark-etl-{{ts_nodash|replace("T", "")}}
+spec:
+  sparkConf:
+    spark.driver.cores: "2"
+    spark.executor.cores: "2"
+    spark.driver.memory: "1000M"
+    spark.executor.memory: "1000M"
+    spark.ssl.enabled: "false"
+    spark.dynamicAllocation.enabled: "true"
+    spark.dynamicAllocation.shuffleTracking.enabled: "true"
+    spark.dynamicAllocation.minExecutors: "1"
+    spark.dynamicAllocation.maxExecutors: "4"
+    spark.sql.extensions: "io.delta.sql.DeltaSparkSessionExtension"
+    spark.sql.catalog.spark_catalog: "org.apache.spark.sql.delta.catalog.DeltaCatalog"
+    spark.executor.extraJavaOptions: "-Dcom.amazonaws.sdk.disableCertChecking=true"
+    spark.driver.extraJavaOptions: "-Dcom.amazonaws.sdk.disableCertChecking=true"
+    spark.hadoop.fs.s3a.path.style.access: "true"
+    spark.hadoop.fs.s3a.impl: "org.apache.hadoop.fs.s3a.S3AFileSystem"
+    spark.hadoop.fs.s3a.connection.ssl.enabled: "false"
+    spark.hadoop.fs.s3a.access.key: "2I4X1LORZ2CQ9OMHRMB55NVYIMX39S3ZKZGACT6RFZ4XAIHIQK84OQ2MERZMKG4LBQWTW28OYYJPOWMQS47SNOBRRUBYTJI9"
+    spark.hadoop.fs.s3a.secret.key: "6MYW46C7LGE1WB1SE722JV7AVJL"
+    spark.hadoop.fs.s3a.endpoint: "https://df-1.se.internal:9000"
+    spark.kubernetes.container.image: "gcr.io/mapr-252711/spark-3.5.0:v3.5.0"
+    spark.driver.extraClassPath: "/mounts/shared-volume/shared/sparkjars/ojdbc8.jar"
+    spark.executor.extraClassPath: "/mounts/shared-volume/shared/sparkjars/ojdbc8.jar"
+  type: Python
+  sparkVersion: 3.4.0
+  mode: cluster
+  image: "gcr.io/mapr-252711/spark-3.5.0:v3.5.0"
+  imagePullPolicy: Always
+  mainApplicationFile: "local:///mnt/shared/airflow_dags/OracleDB_Ingestion.py"
+  restartPolicy:
+    type: Never
+  imagePullSecrets:
+    - imagepull
+  driver:
+    cores: 2
+    coreLimit: "2000m"
+    memory: "1000M"
+    labels:
+      version: 3.4.0
+  executor:
+    cores: 2
+    coreLimit: "2000m"
+    memory: "1000M"
+    labels:
+      version: 3.4.0
