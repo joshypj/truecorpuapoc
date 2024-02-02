@@ -1,0 +1,51 @@
+apiVersion: "sparkoperator.hpe.com/v1beta2"
+kind: SparkApplication
+metadata:
+  name: spark-etl-{{ts_nodash|replace("T", "")}}
+spec:
+  sparkConf:
+    spark.driver.cores: "2"
+    spark.executor.cores: "2"
+    spark.driver.memory: "1000M"
+    spark.executor.memory: "1000M"
+    spark.ssl.enabled: "false"
+    spark.dynamicAllocation.enabled: "true"
+    spark.dynamicAllocation.shuffleTracking.enabled: "true"
+    spark.dynamicAllocation.minExecutors: "1"
+    spark.dynamicAllocation.maxExecutors: "4"
+    spark.sql.extensions: "io.delta.sql.DeltaSparkSessionExtension"
+    spark.sql.catalog.spark_catalog: "org.apache.spark.sql.delta.catalog.DeltaCatalog"
+    spark.executor.extraJavaOptions: "-Dcom.amazonaws.sdk.disableCertChecking=true"
+    spark.driver.extraJavaOptions: "-Dcom.amazonaws.sdk.disableCertChecking=true"
+    spark.hadoop.fs.s3a.path.style.access: "true"
+    spark.hadoop.fs.s3a.impl: "org.apache.hadoop.fs.s3a.S3AFileSystem"
+    spark.hadoop.fs.s3a.connection.ssl.enabled: "false"
+    spark.hadoop.fs.s3a.access.key: "PO93KAAP2YTG4RHMG499FENAFWYUH9Q91XOJYQ6UNY4R0XUVY35A53L47"
+    spark.hadoop.fs.s3a.secret.key: "UV0H7MFJI96MCFY03IMD9X6ZT8H43B3GDS8SXGA4Z7FH0QT2DSZV3ZCKTHS93Z"
+    spark.hadoop.fs.s3a.endpoint: "https://54.251.141.200:9000"
+    spark.kubernetes.driverEnv.PRESTO_ACCESS_TOKEN: "eyJhbGciOiJSUzI1NiIsInR5cCIgOiAiSldUIiwia2lkIiA6ICJwNTdWNHFEVldrTlp6Zkw4Z0h1STNmRHdtTFQ0VjlMN05wWDFMWkdOWjg4In0.eyJleHAiOjE3MDY4NDYzNzksImlhdCI6MTcwNjI0MTU3OSwiYXV0aF90aW1lIjoxNzA2MjQxNTc5LCJqdGkiOiIzNmIwNzg3ZS1hNWJjLTQ5MTEtYWVlYy1hMDVlMGVmNjlkOTgiLCJpc3MiOiJodHRwczovL2tleWNsb2FrLnRydWVwb2MuZXphcGFjLmNvbS9yZWFsbXMvVUEiLCJhdWQiOiJ1YSIsInN1YiI6ImQxYTliNTNjLWEzNGItNDUzNy05YTMzLWNjZjBjZDFjY2VjMSIsInR5cCI6IklEIiwiYXpwIjoidWEiLCJub25jZSI6IlNfZFpnWnMzdU9fQmZINklxNWxuYTA0YllrT0xSSHlYZVZSNWNHd3VmRmMiLCJzZXNzaW9uX3N0YXRlIjoiMjBmNjAyZGUtNjQzNC00ZjYzLTkzYWYtODI4MWVhOTZmNDNlIiwiYXRfaGFzaCI6IjQ3Z19iNU1ab0xQWTdSOUNpZFk0ckEiLCJhY3IiOiIxIiwic2lkIjoiMjBmNjAyZGUtNjQzNC00ZjYzLTkzYWYtODI4MWVhOTZmNDNlIiwidWlkIjoiNjAwMCIsImVtYWlsX3ZlcmlmaWVkIjpmYWxzZSwiZ2lkIjoiNTAwNSIsIm5hbWUiOiJlemFkbWluIHRlc3QiLCJncm91cHMiOlsidWEtZW5hYmxlZCIsIm9mZmxpbmVfYWNjZXNzIiwiYWRtaW4iLCJ1bWFfYXV0aG9yaXphdGlvbiIsImRlZmF1bHQtcm9sZXMtdWEiXSwicHJlZmVycmVkX3VzZXJuYW1lIjoiZXphZG1pbiIsImdpdmVuX25hbWUiOiJlemFkbWluIiwicG9zaXhfdXNlcm5hbWUiOiJlemFkbWluIiwiZmFtaWx5X25hbWUiOiJ0ZXN0IiwiZW1haWwiOiJlemFkbWluQGV6YXBhYy5jb20ifQ.QWO5Lfyj0vMJEi21_69mv0PgVk7ZTqAsrGEk-7zyqC8SA-IOrR5AuIJ9ESzL-O9rgaPyp11wW6TW5HEBrAotDDQrgBGP3HFPY9TKpCOlXkKzq9zretDLvR_Ya_qKGph16MMXV8uDUShEqi8x1KdHfyleEZpqd1Y98c6ckTQgAt_H1lrcGVEADT6Mme_WgYLdHxK-nVWHwlzIeDszXTfta_Wap2SgrDZIQpLlxWozqZyABZo-DVtqp3z_s6sBYWQHmRwedH6GBMxr9EUA5w6Mmu0t1s54_YX24RFy34B4JnYDSkCZKO8blJeXIQEJqjwyvl4UT7n0Zp5wDevxYPqVOg"
+    spark.executorEnv.PRESTO_ACCESS_TOKEN: "eyJhbGciOiJSUzI1NiIsInR5cCIgOiAiSldUIiwia2lkIiA6ICJwNTdWNHFEVldrTlp6Zkw4Z0h1STNmRHdtTFQ0VjlMN05wWDFMWkdOWjg4In0.eyJleHAiOjE3MDY4NDYzNzksImlhdCI6MTcwNjI0MTU3OSwiYXV0aF90aW1lIjoxNzA2MjQxNTc5LCJqdGkiOiIzNmIwNzg3ZS1hNWJjLTQ5MTEtYWVlYy1hMDVlMGVmNjlkOTgiLCJpc3MiOiJodHRwczovL2tleWNsb2FrLnRydWVwb2MuZXphcGFjLmNvbS9yZWFsbXMvVUEiLCJhdWQiOiJ1YSIsInN1YiI6ImQxYTliNTNjLWEzNGItNDUzNy05YTMzLWNjZjBjZDFjY2VjMSIsInR5cCI6IklEIiwiYXpwIjoidWEiLCJub25jZSI6IlNfZFpnWnMzdU9fQmZINklxNWxuYTA0YllrT0xSSHlYZVZSNWNHd3VmRmMiLCJzZXNzaW9uX3N0YXRlIjoiMjBmNjAyZGUtNjQzNC00ZjYzLTkzYWYtODI4MWVhOTZmNDNlIiwiYXRfaGFzaCI6IjQ3Z19iNU1ab0xQWTdSOUNpZFk0ckEiLCJhY3IiOiIxIiwic2lkIjoiMjBmNjAyZGUtNjQzNC00ZjYzLTkzYWYtODI4MWVhOTZmNDNlIiwidWlkIjoiNjAwMCIsImVtYWlsX3ZlcmlmaWVkIjpmYWxzZSwiZ2lkIjoiNTAwNSIsIm5hbWUiOiJlemFkbWluIHRlc3QiLCJncm91cHMiOlsidWEtZW5hYmxlZCIsIm9mZmxpbmVfYWNjZXNzIiwiYWRtaW4iLCJ1bWFfYXV0aG9yaXphdGlvbiIsImRlZmF1bHQtcm9sZXMtdWEiXSwicHJlZmVycmVkX3VzZXJuYW1lIjoiZXphZG1pbiIsImdpdmVuX25hbWUiOiJlemFkbWluIiwicG9zaXhfdXNlcm5hbWUiOiJlemFkbWluIiwiZmFtaWx5X25hbWUiOiJ0ZXN0IiwiZW1haWwiOiJlemFkbWluQGV6YXBhYy5jb20ifQ.QWO5Lfyj0vMJEi21_69mv0PgVk7ZTqAsrGEk-7zyqC8SA-IOrR5AuIJ9ESzL-O9rgaPyp11wW6TW5HEBrAotDDQrgBGP3HFPY9TKpCOlXkKzq9zretDLvR_Ya_qKGph16MMXV8uDUShEqi8x1KdHfyleEZpqd1Y98c6ckTQgAt_H1lrcGVEADT6Mme_WgYLdHxK-nVWHwlzIeDszXTfta_Wap2SgrDZIQpLlxWozqZyABZo-DVtqp3z_s6sBYWQHmRwedH6GBMxr9EUA5w6Mmu0t1s54_YX24RFy34B4JnYDSkCZKO8blJeXIQEJqjwyvl4UT7n0Zp5wDevxYPqVOg"
+    spark.kubernetes.container.image: "gcr.io/mapr-252711/spark-3.4.0:v3.4.0"
+    
+  type: Python
+  sparkVersion: 3.4.0
+  mode: cluster
+  image: "gcr.io/mapr-252711/spark-3.4.0:v3.4.0"
+  imagePullPolicy: Always
+  mainApplicationFile: "local:///mnt/shared/spark_scripts/test_etl.py"
+  restartPolicy:
+    type: Never
+  imagePullSecrets:
+    - imagepull
+  driver:
+    cores: 2
+    coreLimit: "2000m"
+    memory: "1000M"
+    labels:
+      version: 3.4.0
+  executor:
+    cores: 2
+    coreLimit: "2000m"
+    memory: "1000M"
+    labels:
+      version: 3.4.0
