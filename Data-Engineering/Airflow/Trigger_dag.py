@@ -19,7 +19,7 @@ dag = DAG(
     default_args=default_args,
     description='Trigger CNTL_FRAMEWORK',
     schedule_interval=None,
-    tags=['e2e example', 'CNTL', 'Trigger']
+    tags=['e2e example', 'CNTL', 'Trigger'],
     params={'STREM_NM': Param("TEST", type="string")},
     access_control={'All': {'can_read', 'can_edit', 'can_delete'}}
 )
