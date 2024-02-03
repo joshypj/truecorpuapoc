@@ -56,17 +56,6 @@ def condition(**kwargs):
     else:
         return 'taskB'
 
-def submit_spark_etl(**kwargs):
-    parameter_value = kwargs['ti'].xcom_pull(task_ids='read_file', key='file_content')
-    param = {'parm':parameter_value}
-    trigger_dag = TriggerDagRunOperator(
-        task_id='Trigger_dag',
-        trigger_dag_id="TEST_CNTL_1",
-        do_xcom_push=True,
-        dag=dag,
-        conf= param
-    )
-    return 'Trigger_dag'
 
 # Define the tasks
 task1 = PythonOperator(
@@ -106,12 +95,15 @@ branching_task = BranchPythonOperator(
     dag=dag,
 )
 
-taskA = PythonOperator(
+parameter_value = "{{ ti.xcom_pull(task_ids='read_file', key='file_content') }}"
+taskA = TriggerDagRunOperator(
     task_id='taskA',
-    python_callable=submit_spark_etl,
-    provide_context=True,
+    trigger_dag_id="TEST_CNTL_1",
+    do_xcom_push=True,
     dag=dag,
+    conf={'parm': parameter_value.split('^|')[1]}  # Pass parameters to the triggered DAG run
 )
+
 
 taskB = DummyOperator(
     task_id='taskB',
