@@ -57,13 +57,7 @@ def condition(**kwargs):
 
 def submit_spark_etl(**kwargs):
     parameter_value = kwargs['ti'].xcom_pull(task_ids='read_file', key='file_content')
-    parameters = {}  # Initialize an empty dictionary
-    try:
-        # Split the parameter value and convert it to a dictionary
-        parameters = dict(item.split('=') for item in parameter_value.split('^|')[1].split(';'))
-    except ValueError as e:
-        print(f"Error converting parameter value to dictionary: {e}")
-
+    param = {'parm':parameter_value}
     spark_operator = SparkKubernetesOperator(
         task_id='Spark_etl_submit',
         application_file="test_cntl.yaml",
@@ -71,7 +65,7 @@ def submit_spark_etl(**kwargs):
         api_group="sparkoperator.hpe.com",
         enable_impersonation_from_ldap_user=True,
         dag=dag,
-        parameters=parameters  # Pass the parameters dictionary
+        parameters= param
     )
     return 'Spark_etl_submit'
 
