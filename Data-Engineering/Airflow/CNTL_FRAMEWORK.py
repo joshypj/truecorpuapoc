@@ -6,6 +6,7 @@ from airflow.utils.dates import days_ago
 from airflow.providers.cncf.kubernetes.operators.spark_kubernetes import SparkKubernetesOperator
 from airflow.providers.cncf.kubernetes.sensors.spark_kubernetes import SparkKubernetesSensor
 from airflow.operators.dummy import DummyOperator
+from airflow.operators.dagrun_operator import TriggerDagRunOperator
 
 # Define default arguments
 default_args = {
@@ -58,14 +59,12 @@ def condition(**kwargs):
 def submit_spark_etl(**kwargs):
     parameter_value = kwargs['ti'].xcom_pull(task_ids='read_file', key='file_content')
     param = {'parm':parameter_value}
-    spark_operator = SparkKubernetesOperator(
-        task_id='Spark_etl_submit',
-        application_file="test_cntl.yaml",
+    trigger_dag = TriggerDagRunOperator(
+        task_id='Trigger_dag',
+        trigger_dag_id="TEST_CNTL_1",
         do_xcom_push=True,
-        api_group="sparkoperator.hpe.com",
-        enable_impersonation_from_ldap_user=True,
         dag=dag,
-        params= param
+        conf= param
     )
     return 'Spark_etl_submit'
 
