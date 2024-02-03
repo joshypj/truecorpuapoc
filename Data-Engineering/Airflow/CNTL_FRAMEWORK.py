@@ -66,7 +66,7 @@ def submit_spark_etl(**kwargs):
         dag=dag,
         conf= param
     )
-    return 'Spark_etl_submit'
+    return 'Trigger_dag'
 
 # Define the tasks
 task1 = PythonOperator(
