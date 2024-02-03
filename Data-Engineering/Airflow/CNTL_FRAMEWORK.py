@@ -3,6 +3,7 @@ from airflow import DAG
 from airflow.operators.python_operator import PythonOperator, BranchPythonOperator
 from airflow.models import Param,DagRun
 from airflow.utils.dates import days_ago
+from airflow.utils.helpers import chain
 from airflow.providers.cncf.kubernetes.operators.spark_kubernetes import SparkKubernetesOperator
 from airflow.providers.cncf.kubernetes.sensors.spark_kubernetes import SparkKubernetesSensor
 from airflow.operators.dummy import DummyOperator
@@ -129,6 +130,23 @@ taskAmonitor = PythonOperator(
     dag=dag,
 )
 
+insert_log = SparkKubernetesOperator(
+    task_id='insert_log',
+    application_file="insert_log.yaml",
+    do_xcom_push=True,
+    api_group="sparkoperator.hpe.com",
+    enable_impersonation_from_ldap_user=True,
+    dag=dag,
+)
+
+monitor_insert_log = SparkKubernetesSensor(
+    task_id='monitor_insert_log',
+    application_name="{{ ti.xcom_pull(task_ids='insert_log')['metadata']['name'] }}",
+    dag=dag,
+    api_group="sparkoperator.hpe.com",
+    attach_log=True,
+    do_xcom_push=True,
+)
 
 task4 = PythonOperator(
     task_id='Data_Loading_Done',
@@ -137,8 +155,9 @@ task4 = PythonOperator(
 )
 
 # Define task dependencies
-task1 >> task2 >> task3 >> read_file_task >> branching_task
-branching_task >> taskA
-branching_task >> taskB
+chain(task1, task2, task3, read_file_task, branching_task)
+task2 >> task3
+read_file_task >> branching_task
+branching_task >> [taskA, taskB]
 taskA >> taskAmonitor >> task4
-taskB >> task4
+taskB >> insert_log >> task4
