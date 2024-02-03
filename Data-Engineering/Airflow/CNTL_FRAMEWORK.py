@@ -120,7 +120,7 @@ taskB = DummyOperator(
 
 taskAmonitor = SparkKubernetesSensor(
     task_id='taskA_monitor',
-    application_name="{{ ti.xcom_pull(task_ids='Spark_etl_submit')['metadata']['name'] }}",
+    application_name="{{ ti.xcom_pull(task_ids='Trigger_dag')['metadata']['name'] }}",
     dag=dag,
     api_group="sparkoperator.hpe.com",
     attach_log=True,
