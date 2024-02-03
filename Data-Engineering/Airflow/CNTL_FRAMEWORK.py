@@ -96,12 +96,13 @@ branching_task = BranchPythonOperator(
 )
 
 parameter_value = "{{ ti.xcom_pull(task_ids='read_file', key='file_content') }}"
+print('parameter_value :',parameter_value)
 taskA = TriggerDagRunOperator(
     task_id='taskA',
     trigger_dag_id="TEST_CNTL_1",
     do_xcom_push=True,
     dag=dag,
-    conf={'parm': parameter_value.split('^|')[1]}  # Pass parameters to the triggered DAG run
+    conf={'parm': parameter_value}  # Pass parameters to the triggered DAG run
 )
 
 
