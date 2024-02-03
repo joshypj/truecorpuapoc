@@ -43,6 +43,9 @@ spec:
     memory: "1000M"
     labels:
       version: 3.4.0
+    env:
+      - name: parm
+        value: "{{ params.parm }}"
   executor:
     cores: 2
     coreLimit: "2000m"
