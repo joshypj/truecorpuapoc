@@ -111,14 +111,24 @@ taskB = DummyOperator(
     dag=dag,
 )
 
-taskAmonitor = SparkKubernetesSensor(
+def check_triggered_dag_status(**kwargs):
+    # Retrieve the triggered DAG run
+    dag_run_id = kwargs['ti'].xcom_pull(task_ids='Trigger_dag')
+    dag_run = DagRun.find(dag_id="TEST_CNTL_1", run_id=dag_run_id)
+    
+    # Check if the DAG run exists and print its status
+    if dag_run:
+        print("Status of TEST_CNTL_1:", dag_run[0].state)
+    else:
+        print("No record found for TEST_CNTL_1")
+
+taskAmonitor = PythonOperator(
     task_id='taskA_monitor',
-    application_name="{{ ti.xcom_pull(task_ids='Trigger_dag', key='metadata', default={})['name'] }}",
+    python_callable=check_triggered_dag_status,
+    provide_context=True,
     dag=dag,
-    api_group="sparkoperator.hpe.com",
-    attach_log=True,
-    do_xcom_push=True,
 )
+
 
 task4 = PythonOperator(
     task_id='Data_Loading_Done',
