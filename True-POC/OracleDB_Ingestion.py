@@ -49,7 +49,7 @@ task2=SparkKubernetesOperator(
 )
 
 task3 = SparkKubernetesSensor(
-    task_id='Spark_etl_monitor',
+    task_id='OracleDB_Batch_Job_Monitor',
     application_name="{{ task_instance.xcom_pull(task_ids='OracleDB_Ingestion_to_Delta_Lake')['metadata']['name'] }}",
     dag=dag,
     api_group="sparkoperator.hpe.com",
