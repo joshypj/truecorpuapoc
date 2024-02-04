@@ -159,5 +159,5 @@ chain(task1, task2, task3, read_file_task, branching_task)
 task2 >> task3
 read_file_task >> branching_task
 branching_task >> [taskA, taskB]
-taskA >> taskAmonitor >> task4
+taskA >> taskAmonitor >>insert_log>>monitor_insert_log >> task4
 taskB >> insert_log >>monitor_insert_log>> task4
