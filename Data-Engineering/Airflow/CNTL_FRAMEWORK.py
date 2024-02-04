@@ -1,11 +1,13 @@
 from datetime import datetime, timedelta
 from airflow import DAG
 from airflow.operators.python_operator import PythonOperator, BranchPythonOperator
-from airflow.models import Param
+from airflow.models import Param,DagRun
 from airflow.utils.dates import days_ago
+from airflow.utils.helpers import chain
 from airflow.providers.cncf.kubernetes.operators.spark_kubernetes import SparkKubernetesOperator
 from airflow.providers.cncf.kubernetes.sensors.spark_kubernetes import SparkKubernetesSensor
 from airflow.operators.dummy import DummyOperator
+from airflow.operators.dagrun_operator import TriggerDagRunOperator
 
 # Define default arguments
 default_args = {
@@ -55,18 +57,6 @@ def condition(**kwargs):
     else:
         return 'taskB'
 
-def submit_spark_etl(**kwargs):
-    parameter_value = kwargs['ti'].xcom_pull(task_ids='read_file', key='file_content')
-    spark_operator = SparkKubernetesOperator(
-        task_id='Spark_etl_submit',
-        application_file="test_cntl.yaml",
-        do_xcom_push=True,
-        api_group="sparkoperator.hpe.com",
-        enable_impersonation_from_ldap_user=True,
-        dag=dag,
-        parameters= parameter_value.split('^|')[1]
-    )
-    return 'Spark_etl_submit'
 
 # Define the tasks
 task1 = PythonOperator(
@@ -106,21 +96,52 @@ branching_task = BranchPythonOperator(
     dag=dag,
 )
 
-taskA = PythonOperator(
+parameter_value = "{{ ti.xcom_pull(task_ids='read_file', key='file_content') }}"
+print('parameter_value :',parameter_value)
+taskA = TriggerDagRunOperator(
     task_id='taskA',
-    python_callable=submit_spark_etl,
-    provide_context=True,
+    trigger_dag_id="TEST_CNTL_1",
+    do_xcom_push=True,
     dag=dag,
+    conf={'parm': parameter_value}  # Pass parameters to the triggered DAG run
 )
+
 
 taskB = DummyOperator(
     task_id='taskB',
     dag=dag,
 )
 
-taskAmonitor = SparkKubernetesSensor(
+def check_triggered_dag_status(**kwargs):
+    # Retrieve the triggered DAG run
+    dag_run_id = kwargs['ti'].xcom_pull(task_ids='Trigger_dag')
+    dag_run = DagRun.find(dag_id="TEST_CNTL_1", run_id=dag_run_id)
+    
+    # Check if the DAG run exists and print its status
+    if dag_run:
+        print("Status of TEST_CNTL_1:", dag_run[0].state)
+    else:
+        print("No record found for TEST_CNTL_1")
+
+taskAmonitor = PythonOperator(
     task_id='taskA_monitor',
-    application_name="{{ ti.xcom_pull(task_ids='Spark_etl_submit')['metadata']['name'] }}",
+    python_callable=check_triggered_dag_status,
+    provide_context=True,
+    dag=dag,
+)
+
+insert_log = SparkKubernetesOperator(
+    task_id='insert_log',
+    application_file="insert_log.yaml",
+    do_xcom_push=True,
+    api_group="sparkoperator.hpe.com",
+    enable_impersonation_from_ldap_user=True,
+    dag=dag,
+)
+
+monitor_insert_log = SparkKubernetesSensor(
+    task_id='monitor_insert_log',
+    application_name="{{ ti.xcom_pull(task_ids='insert_log')['metadata']['name'] }}",
     dag=dag,
     api_group="sparkoperator.hpe.com",
     attach_log=True,
@@ -135,7 +156,9 @@ task4 = PythonOperator(
 
 # Define task dependencies
 task1 >> task2 >> task3 >> read_file_task >> branching_task
+
 branching_task >> taskA
 branching_task >> taskB
-taskA >> taskAmonitor >> task4
-taskB >> task4
+
+taskA >> taskAmonitor >> insert_log >> monitor_insert_log >> task4
+taskB >> insert_log >> monitor_insert_log >> task4
