@@ -82,9 +82,11 @@ read_file_task = PythonOperator(
     provide_context=True,
     dag=dag,
 )
-parm = "{{ ti.xcom_pull(task_ids='read_file', key='file_content') }}"
-type = parm.split('^|')[-1]
-def condition(type):
+
+def condition(**kwargs):
+    parm = kwargs['ti'].xcom_pull(task_ids='read_file', key='file_content')
+    type = parm.split('^|')[-1]
+
     if type == '1':
         return 'taskA'
     else:
@@ -134,18 +136,6 @@ taskBmonitor = DummyOperator(
     dag=dag,
 )
 
-def monitor_condition(type):
-    if type == '1':
-        return 'taskAmonitor'
-    else:
-        return 'taskBmonitor'
-    
-branching_task_log = BranchPythonOperator(
-    task_id='branching_task_monitor',
-    python_callable=monitor_condition,
-    dag=dag,
-)
-
 
 insert_log = SparkKubernetesOperator(
     task_id='insert_log',
@@ -183,3 +173,4 @@ taskB >> taskBmonitor
 taskBmonitor >> insert_log
 
 insert_log >> task4
+
