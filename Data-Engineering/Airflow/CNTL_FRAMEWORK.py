@@ -48,14 +48,7 @@ def read_and_print_file(**kwargs):
     except FileNotFoundError:
         print(f"File not found at {file_path}")
 
-def condition(**kwargs):
-    parm = kwargs['ti'].xcom_pull(task_ids='read_file', key='file_content')
-    type = parm.split('^|')[-1]
 
-    if type == '1':
-        return 'taskA'
-    else:
-        return 'taskB'
 
 
 # Define the tasks
@@ -90,6 +83,14 @@ read_file_task = PythonOperator(
     dag=dag,
 )
 
+def condition(**kwargs):
+    parm = kwargs['ti'].xcom_pull(task_ids='read_file', key='file_content')
+    type = parm.split('^|')[-1]
+
+    if type == '1':
+        return 'taskA'
+    else:
+        return 'taskB'
 branching_task = BranchPythonOperator(
     task_id='branching_task',
     python_callable=condition,
@@ -135,21 +136,6 @@ taskBmonitor = DummyOperator(
     dag=dag,
 )
 
-def monitor_condition(**kwargs):
-    parm = kwargs['ti'].xcom_pull(task_ids='read_file', key='file_content')
-    type = parm.split('^|')[-1]
-
-    if type == '1':
-        return 'taskAmonitor'
-    else:
-        return 'taskBmonitor'
-    
-branching_task_log = BranchPythonOperator(
-    task_id='branching_task_monitor',
-    python_callable=monitor_condition,
-    dag=dag,
-)
-
 
 insert_log = SparkKubernetesOperator(
     task_id='insert_log',
@@ -177,8 +163,14 @@ task4 = PythonOperator(
 
 # Define task dependencies
 task1 >> task2 >> task3 >> read_file_task >> branching_task
-branching_task >> [taskA, taskB]
-branching_task >> branching_task_log
-[taskA, taskB] >> branching_task_log
-branching_task_log >> [taskAmonitor, taskBmonitor]
-[taskAmonitor, taskBmonitor] >> insert_log >> monitor_insert_log >> task4
+
+branching_task >> taskA
+taskA >> taskAmonitor
+taskAmonitor >> insert_log
+
+branching_task >> taskB
+taskB >> taskBmonitor
+taskBmonitor >> insert_log
+
+insert_log >>monitor_insert_log>> task4
+
