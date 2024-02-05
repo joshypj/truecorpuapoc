@@ -145,6 +145,7 @@ insert_log = SparkKubernetesOperator(
     do_xcom_push=True,
     api_group="sparkoperator.hpe.com",
     enable_impersonation_from_ldap_user=True,
+    wait_for_past_depends_before_skipping = True,
     dag=dag,
 )
 
