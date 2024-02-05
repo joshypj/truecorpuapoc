@@ -49,7 +49,7 @@ task2=SparkKubernetesOperator(
 )
 
 task3 = SparkKubernetesSensor(
-    task_id='OracleDB_Batch_Job_Monitor',
+    task_id='MysqlDB_Batch_Job_Monitor',
     application_name="{{ task_instance.xcom_pull(task_ids='MysqlDB_Transform_to_Delta_Lake')['metadata']['name'] }}",
     dag=dag,
     api_group="sparkoperator.hpe.com",
