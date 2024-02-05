@@ -26,8 +26,8 @@ spec:
     spark.hadoop.fs.s3a.secret.key: "6MYW46C7LGE1WB1SE722JV7AVJL"
     spark.hadoop.fs.s3a.endpoint: "https://df-1.se.internal:9000"
     spark.kubernetes.container.image: "gcr.io/mapr-252711/spark-3.5.0:v3.5.0"
-    spark.driver.extraClassPath: "local:///mnt/shared/sparkjars/ojdbc8.jar"
-    spark.executor.extraClassPath: "local:///mnt/shared/sparkjars/ojdbc8.jar"
+    spark.driver.extraClassPath: "local:///mnt/shared/sparkjars/postgresql-42.7.1.jar"
+    spark.executor.extraClassPath: "local:///mnt/shared/sparkjars/postgresql-42.7.1.jar"
   type: Python
   sparkVersion: 3.5.0
   mode: cluster
