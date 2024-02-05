@@ -172,5 +172,5 @@ branching_task >> taskB
 taskB >> taskBmonitor
 taskBmonitor >> insert_log
 
-insert_log >> task4
+insert_log >>monitor_insert_log>> task4
 
