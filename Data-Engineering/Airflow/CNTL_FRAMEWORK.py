@@ -177,8 +177,8 @@ task4 = PythonOperator(
 
 # Define task dependencies
 task1 >> task2 >> task3 >> read_file_task >> branching_task
-
-branching_task >> [taskA, taskB] >> branching_task_log
-
-branching_task_log >> [taskAmonitor, taskBmonitor] >> insert_log >> monitor_insert_log >> task4
-
+branching_task >> [taskA, taskB]
+branching_task >> branching_task_log
+[taskA, taskB] >> branching_task_log
+branching_task_log >> [taskAmonitor, taskBmonitor]
+[taskAmonitor, taskBmonitor] >> insert_log >> monitor_insert_log >> task4
