@@ -14,7 +14,7 @@ default_args = {
     'retry_delay': timedelta(minutes=1),
 }
 dag = DAG(
-    'OracleDB_Ingestion',
+    'PostgresDB_Ingestion',
     default_args=default_args,
     description='Banking-data-demo',
     schedule_interval=None,
@@ -40,8 +40,8 @@ task1 = PythonOperator(
     dag=dag,
 )
 task2=SparkKubernetesOperator(
-    task_id='OracleDB_Ingestion_to_Delta_Lake',
-    application_file="OracleDB_Ingestion.yaml",
+    task_id='PostgresDB_Ingestion_to_Delta_Lake',
+    application_file="PostgresDB_Ingestion.yaml",
     do_xcom_push=True,
     dag=dag,
     api_group="sparkoperator.hpe.com",
@@ -49,8 +49,8 @@ task2=SparkKubernetesOperator(
 )
 
 task3 = SparkKubernetesSensor(
-    task_id='OracleDB_Batch_Job_Monitor',
-    application_name="{{ task_instance.xcom_pull(task_ids='OracleDB_Ingestion_to_Delta_Lake')['metadata']['name'] }}",
+    task_id='PostgresDB_Batch_Job_Monitor',
+    application_name="{{ task_instance.xcom_pull(task_ids='PostgresDB_Ingestion_to_Delta_Lake')['metadata']['name'] }}",
     dag=dag,
     api_group="sparkoperator.hpe.com",
     attach_log=True

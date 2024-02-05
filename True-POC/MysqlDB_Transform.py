@@ -14,7 +14,7 @@ default_args = {
     'retry_delay': timedelta(minutes=1),
 }
 dag = DAG(
-    'OracleDB_Ingestion',
+    'MysqlDB_Transform',
     default_args=default_args,
     description='Banking-data-demo',
     schedule_interval=None,
@@ -29,10 +29,10 @@ dag = DAG(
 )
 
 def start_job():
-    print("Starting the Data reading from RDBMS.......")
+    print("Starting the Data reading from Raw Zone.......")
 
 def end_job():
-    print("Data written to the object storage in parquet format.......... ")
+    print("Data Transformed and written to Staging zone.......... ")
 
 task1 = PythonOperator(
     task_id='Start_Data_Reading',
@@ -40,8 +40,8 @@ task1 = PythonOperator(
     dag=dag,
 )
 task2=SparkKubernetesOperator(
-    task_id='OracleDB_Ingestion_to_Delta_Lake',
-    application_file="OracleDB_Ingestion.yaml",
+    task_id='MysqlDB_Transform_to_Delta_Lake',
+    application_file="MysqlDB_Transform.yaml",
     do_xcom_push=True,
     dag=dag,
     api_group="sparkoperator.hpe.com",
@@ -50,7 +50,7 @@ task2=SparkKubernetesOperator(
 
 task3 = SparkKubernetesSensor(
     task_id='OracleDB_Batch_Job_Monitor',
-    application_name="{{ task_instance.xcom_pull(task_ids='OracleDB_Ingestion_to_Delta_Lake')['metadata']['name'] }}",
+    application_name="{{ task_instance.xcom_pull(task_ids='MysqlDB_Transform_to_Delta_Lake')['metadata']['name'] }}",
     dag=dag,
     api_group="sparkoperator.hpe.com",
     attach_log=True
