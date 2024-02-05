@@ -48,14 +48,7 @@ def read_and_print_file(**kwargs):
     except FileNotFoundError:
         print(f"File not found at {file_path}")
 
-def condition(**kwargs):
-    parm = kwargs['ti'].xcom_pull(task_ids='read_file', key='file_content')
-    type = parm.split('^|')[-1]
 
-    if type == '1':
-        return 'taskA'
-    else:
-        return 'taskB'
 
 
 # Define the tasks
@@ -89,7 +82,13 @@ read_file_task = PythonOperator(
     provide_context=True,
     dag=dag,
 )
-
+parm = "{{ ti.xcom_pull(task_ids='read_file', key='file_content') }}"
+type = parm.split('^|')[-1]
+def condition(type):
+    if type == '1':
+        return 'taskA'
+    else:
+        return 'taskB'
 branching_task = BranchPythonOperator(
     task_id='branching_task',
     python_callable=condition,
@@ -135,10 +134,7 @@ taskBmonitor = DummyOperator(
     dag=dag,
 )
 
-def monitor_condition(**kwargs):
-    parm = kwargs['ti'].xcom_pull(task_ids='read_file', key='file_content')
-    type = parm.split('^|')[-1]
-
+def monitor_condition(type):
     if type == '1':
         return 'taskAmonitor'
     else:
