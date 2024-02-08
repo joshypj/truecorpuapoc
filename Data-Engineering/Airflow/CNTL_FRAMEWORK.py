@@ -48,8 +48,26 @@ def read_and_print_file(**kwargs):
     except FileNotFoundError:
         print(f"File not found at {file_path}")
 
+def condition(**kwargs):
+    parm = kwargs['ti'].xcom_pull(task_ids='read_file', key='file_content')
+    type = parm.split('^|')[-1]
 
+    if type == '1':
+        return 'taskA'
+    else:
+        return 'taskB'
+    
 
+def check_triggered_dag_status(**kwargs):
+    # Retrieve the triggered DAG run
+    dag_run_id = kwargs['ti'].xcom_pull(task_ids='Trigger_dag')
+    dag_run = DagRun.find(dag_id="TEST_CNTL_1", run_id=dag_run_id)
+    
+    # Check if the DAG run exists and print its status
+    if dag_run:
+        print("Status of TEST_CNTL_1:", dag_run[0].state)
+    else:
+        print("No record found for TEST_CNTL_1")
 
 # Define the tasks
 task1 = PythonOperator(
@@ -83,14 +101,7 @@ read_file_task = PythonOperator(
     dag=dag,
 )
 
-def condition(**kwargs):
-    parm = kwargs['ti'].xcom_pull(task_ids='read_file', key='file_content')
-    type = parm.split('^|')[-1]
 
-    if type == '1':
-        return 'taskA'
-    else:
-        return 'taskB'
 branching_task = BranchPythonOperator(
     task_id='branching_task',
     python_callable=condition,
@@ -98,7 +109,7 @@ branching_task = BranchPythonOperator(
 )
 
 parameter_value = "{{ ti.xcom_pull(task_ids='read_file', key='file_content') }}"
-print('parameter_value :',parameter_value)
+
 taskA = TriggerDagRunOperator(
     task_id='taskA',
     trigger_dag_id="TEST_CNTL_1",
@@ -113,16 +124,7 @@ taskB = DummyOperator(
     dag=dag,
 )
 
-def check_triggered_dag_status(**kwargs):
-    # Retrieve the triggered DAG run
-    dag_run_id = kwargs['ti'].xcom_pull(task_ids='Trigger_dag')
-    dag_run = DagRun.find(dag_id="TEST_CNTL_1", run_id=dag_run_id)
-    
-    # Check if the DAG run exists and print its status
-    if dag_run:
-        print("Status of TEST_CNTL_1:", dag_run[0].state)
-    else:
-        print("No record found for TEST_CNTL_1")
+
 
 taskAmonitor = PythonOperator(
     task_id='taskA_monitor',
@@ -143,6 +145,7 @@ insert_log = SparkKubernetesOperator(
     do_xcom_push=True,
     api_group="sparkoperator.hpe.com",
     enable_impersonation_from_ldap_user=True,
+    trigger_rule='one_success',
     dag=dag,
 )
 
@@ -164,13 +167,9 @@ task4 = PythonOperator(
 # Define task dependencies
 task1 >> task2 >> task3 >> read_file_task >> branching_task
 
-branching_task >> taskA
+branching_task >> [taskA, taskB]
+
 taskA >> taskAmonitor
-taskAmonitor >> insert_log
-
-branching_task >> taskB
 taskB >> taskBmonitor
-taskBmonitor >> insert_log
 
-insert_log >>monitor_insert_log>> task4
-
+[taskAmonitor, taskBmonitor] >> insert_log >> monitor_insert_log >> task4
