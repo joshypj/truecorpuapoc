@@ -1,0 +1,55 @@
+apiVersion: "sparkoperator.hpe.com/v1beta2"
+kind: SparkApplication
+metadata:
+  name: spark-etl-{{ts_nodash|replace("T", "")}}
+spec:
+  sparkConf:
+    spark.driver.cores: "2"
+    spark.executor.cores: "2"
+    spark.driver.memory: "1000M"
+    spark.executor.memory: "1000M"
+    spark.ssl.enabled: "false"
+    spark.dynamicAllocation.enabled: "true"
+    spark.dynamicAllocation.shuffleTracking.enabled: "true"
+    spark.dynamicAllocation.minExecutors: "1"
+    spark.dynamicAllocation.maxExecutors: "4"
+    spark.sql.extensions: "io.delta.sql.DeltaSparkSessionExtension"
+    spark.sql.catalog.spark_catalog: "org.apache.spark.sql.delta.catalog.DeltaCatalog"
+    spark.executor.extraJavaOptions: "-Dcom.amazonaws.sdk.disableCertChecking=true"
+    spark.driver.extraJavaOptions: "-Dcom.amazonaws.sdk.disableCertChecking=true"
+    spark.hadoop.fs.s3a.path.style.access: "true"
+    spark.hadoop.fs.s3a.impl: "org.apache.hadoop.fs.s3a.S3AFileSystem"
+    spark.hadoop.fs.s3a.connection.ssl.enabled: "false"
+    spark.kubernetes.driverEnv.PRESTO_ACCESS_TOKEN: "eyJhbGciOiJSUzI1NiIsInR5cCIgOiAiSldUIiwia2lkIiA6ICJiR1JPcjVDU2RmUUlRZy1qRVZya2NZVDY2elZuNVgwUmJGZ0VzS1IxbzFFIn0.eyJleHAiOjE3MDY4NjA5OTEsImlhdCI6MTcwNjg1OTE5MSwiYXV0aF90aW1lIjoxNzA2ODQ3MjkwLCJqdGkiOiI5MzQ4ZDZhMS0xYTQ5LTQ1YzgtOWZiNi04YjNhNGFkMjA2MzAiLCJpc3MiOiJodHRwczovL2tleWNsb2FrLmV6dWEudHJ1ZWNvcnAubG9jYWwvcmVhbG1zL1VBIiwic3ViIjoiM2UyMGIzMDUtMzc0MS00NWJjLTg5YmMtOTdhMzFkMGJiYjMzIiwidHlwIjoiQmVhcmVyIiwiYXpwIjoidWEiLCJub25jZSI6InhRQWlLTFRadWt6Y3ZUbE4xWWJ2eEUyRWZ6T2EzOE9LRHFZbnZnUU1YTXMiLCJzZXNzaW9uX3N0YXRlIjoiYmE0Y2ZhYjgtZGExNi00NjE1LWI0ZjUtNWEzYTM1NWQ1MWZhIiwiYWNyIjoiMSIsInNjb3BlIjoib3BlbmlkIG9mZmxpbmVfYWNjZXNzIGVtYWlsIHByb2ZpbGUiLCJzaWQiOiJiYTRjZmFiOC1kYTE2LTQ2MTUtYjRmNS01YTNhMzU1ZDUxZmEiLCJ1aWQiOiI2MDAyIiwiZW1haWxfdmVyaWZpZWQiOmZhbHNlLCJnaWQiOiI1MDA1IiwibmFtZSI6Ikpvc2h5IFAgSiIsImdyb3VwcyI6WyJ1YS1lbmFibGVkIiwib2ZmbGluZV9hY2Nlc3MiLCJhZG1pbiIsInVtYV9hdXRob3JpemF0aW9uIiwiZGVmYXVsdC1yb2xlcy11YSJdLCJwcmVmZXJyZWRfdXNlcm5hbWUiOiJqcGoiLCJnaXZlbl9uYW1lIjoiSm9zaHkgUCIsInBvc2l4X3VzZXJuYW1lIjoianBqIiwiZmFtaWx5X25hbWUiOiJKIiwiZW1haWwiOiJqb3NoeS5wakBocGUuY29tIn0.e8GzuL7tk98DJvc56XLCte598z2iXsw-O0HE8R-hK_hqweBmar0MzXYoOtQq2SdDsTiggUs2IgFMuaM3-LLj5JH2KR7YXjFkT2lV-FN2p-DNAgjT5cXLdTJrvYR_3Pj0QoMxnryG7hPkzg3L1dlrvzn9_qG7YCCeC2vX7L-RLl0xgawTRAJFK_djV_3BZCnkkSEBubO-TjD0AqGt2zlcVTbXBszvvwaYSlDhp93K-vQw8v8Yik_oCgg6D0evhiM-KcOYzBmiy2rIZr3bj2WlBmtHNnAxFRPKRYSuHy-zScDcHFsVmDlTar2rX9ZUjf89FYbIqO083EEOZiQG1WVeaw"
+    spark.executorEnv.PRESTO_ACCESS_TOKEN: "eyJhbGciOiJSUzI1NiIsInR5cCIgOiAiSldUIiwia2lkIiA6ICJiR1JPcjVDU2RmUUlRZy1qRVZya2NZVDY2elZuNVgwUmJGZ0VzS1IxbzFFIn0.eyJleHAiOjE3MDY4NjA5OTEsImlhdCI6MTcwNjg1OTE5MSwiYXV0aF90aW1lIjoxNzA2ODQ3MjkwLCJqdGkiOiI5MzQ4ZDZhMS0xYTQ5LTQ1YzgtOWZiNi04YjNhNGFkMjA2MzAiLCJpc3MiOiJodHRwczovL2tleWNsb2FrLmV6dWEudHJ1ZWNvcnAubG9jYWwvcmVhbG1zL1VBIiwic3ViIjoiM2UyMGIzMDUtMzc0MS00NWJjLTg5YmMtOTdhMzFkMGJiYjMzIiwidHlwIjoiQmVhcmVyIiwiYXpwIjoidWEiLCJub25jZSI6InhRQWlLTFRadWt6Y3ZUbE4xWWJ2eEUyRWZ6T2EzOE9LRHFZbnZnUU1YTXMiLCJzZXNzaW9uX3N0YXRlIjoiYmE0Y2ZhYjgtZGExNi00NjE1LWI0ZjUtNWEzYTM1NWQ1MWZhIiwiYWNyIjoiMSIsInNjb3BlIjoib3BlbmlkIG9mZmxpbmVfYWNjZXNzIGVtYWlsIHByb2ZpbGUiLCJzaWQiOiJiYTRjZmFiOC1kYTE2LTQ2MTUtYjRmNS01YTNhMzU1ZDUxZmEiLCJ1aWQiOiI2MDAyIiwiZW1haWxfdmVyaWZpZWQiOmZhbHNlLCJnaWQiOiI1MDA1IiwibmFtZSI6Ikpvc2h5IFAgSiIsImdyb3VwcyI6WyJ1YS1lbmFibGVkIiwib2ZmbGluZV9hY2Nlc3MiLCJhZG1pbiIsInVtYV9hdXRob3JpemF0aW9uIiwiZGVmYXVsdC1yb2xlcy11YSJdLCJwcmVmZXJyZWRfdXNlcm5hbWUiOiJqcGoiLCJnaXZlbl9uYW1lIjoiSm9zaHkgUCIsInBvc2l4X3VzZXJuYW1lIjoianBqIiwiZmFtaWx5X25hbWUiOiJKIiwiZW1haWwiOiJqb3NoeS5wakBocGUuY29tIn0.e8GzuL7tk98DJvc56XLCte598z2iXsw-O0HE8R-hK_hqweBmar0MzXYoOtQq2SdDsTiggUs2IgFMuaM3-LLj5JH2KR7YXjFkT2lV-FN2p-DNAgjT5cXLdTJrvYR_3Pj0QoMxnryG7hPkzg3L1dlrvzn9_qG7YCCeC2vX7L-RLl0xgawTRAJFK_djV_3BZCnkkSEBubO-TjD0AqGt2zlcVTbXBszvvwaYSlDhp93K-vQw8v8Yik_oCgg6D0evhiM-KcOYzBmiy2rIZr3bj2WlBmtHNnAxFRPKRYSuHy-zScDcHFsVmDlTar2rX9ZUjf89FYbIqO083EEOZiQG1WVeaw"
+    spark.hadoop.fs.s3a.access.key: "2I4X1LORZ2CQ9OMHRMB55NVYIMX39S3ZKZGACT6RFZ4XAIHIQK84OQ2MERZMKG4LBQWTW28OYYJPOWMQS47SNOBRRUBYTJI9"
+    spark.hadoop.fs.s3a.secret.key: "6MYW46C7LGE1WB1SE722JV7AVJL"
+    spark.hadoop.fs.s3a.endpoint: "https://df-1.se.internal:9000"
+    spark.kubernetes.container.image: "gcr.io/mapr-252711/spark-3.5.0:v3.5.0"
+    spark.driver.extraClassPath: "local:///mnt/shared/sparkjars/mysql-connector-j-8.3.0.jar"
+    spark.executor.extraClassPath: "local:///mnt/shared/sparkjars/mysql-connector-j-8.3.0.jar"
+  type: Python
+  sparkVersion: 3.5.0
+  mode: cluster
+  image: "gcr.io/mapr-252711/spark-3.5.0:v3.5.0"
+  imagePullPolicy: Always
+  mainApplicationFile: "local:///mnt/shared/airflow_dags/CNTL_FRAMEWORK.py"
+  restartPolicy:
+    type: Never
+  imagePullSecrets:
+    - imagepull
+  driver:
+    cores: 2
+    coreLimit: "2000m"
+    memory: "1000M"
+    labels:
+      version: 3.5.0
+    env:
+    - name: STREM_NM
+      value: "{{ params.STREM_NM }}"
+  executor:
+    cores: 2
+    coreLimit: "2000m"
+    memory: "1000M"
+    labels:
+      version: 3.5.0
