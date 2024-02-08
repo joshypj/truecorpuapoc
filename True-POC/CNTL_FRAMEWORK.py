@@ -66,3 +66,5 @@ task4 = PythonOperator(
     python_callable=end_job,
     dag=dag,
 )
+
+task1 >> task2 >> task3 >> task4
