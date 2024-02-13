@@ -42,9 +42,9 @@ monitor_cntl_framework = ExternalTaskSensor(
     task_id='monitor_cntl_framework',
     external_dag_id='CNTL_FRAMEWORK',  # specify the DAG ID of the target DAG
     external_task_id='task_id_to_monitor',  # specify the task ID within the target DAG
-    mode='reschedule',  # reschedule the sensor task
-    poke_interval=60,  # check every 60 seconds
+    mode='poke',  # Change mode to 'poke' for efficiency
     timeout=7200,  # timeout after 2 hours (adjust as needed)
+    poke_interval=60,  # check every 60 seconds
     dag=dag,
 )
 
