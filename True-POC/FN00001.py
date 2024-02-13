@@ -14,7 +14,7 @@ from airflow.sensors.external_task import ExternalTaskSensor
 default_args = {
     'owner': 'airflow',
     'depends_on_past': False,
-    'start_date': datetime.combine(datetime.today(), datetime.min.time()) + timedelta(hours=17, minutes=10),  # Start today at 17:00
+    'start_date':datetime.now(),  # Start when activate
     'retries': 1,
     'retry_delay': timedelta(minutes=1),
 
