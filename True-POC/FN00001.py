@@ -14,7 +14,7 @@ from airflow.sensors.external_task import ExternalTaskSensor
 default_args = {
     'owner': 'airflow',
     'depends_on_past': False,
-    'start_date': datetime.combine(datetime.today(), datetime.min.time()) + timedelta(hours=17),  # Start today at 17:00
+    'start_date': datetime.combine(datetime.today(), datetime.min.time()) + timedelta(hours=17, minutes=10),  # Start today at 17:00
     'retries': 1,
     'retry_delay': timedelta(minutes=1),
 
@@ -27,7 +27,6 @@ dag = DAG(
     description='Running Stream',
     schedule_interval="*/30 * * * *",  # Run every 30 minutes
     tags=['e2e example', 'ETL', 'spark'],
-    params={'STREM_NM': Param("X3_TEST_99_D", type="string")},
     access_control={'All': {'can_read', 'can_edit', 'can_delete'}}
 )
 
@@ -36,6 +35,7 @@ trigger_cntl_framework = TriggerDagRunOperator(
     task_id='trigger_cntl_framework',
     trigger_dag_id='CNTL_FRAMEWORK',  # specify the DAG ID of the target DAG you want to trigger
     dag=dag,
+    params={'STREM_NM': 'STREM_INGESTION'}
 )
 
 # Define the ExternalTaskSensor to monitor the CNTL_FRAMEWORK DAG
