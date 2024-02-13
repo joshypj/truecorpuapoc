@@ -37,16 +37,7 @@ trigger_cntl_framework = TriggerDagRunOperator(
     params={'STREM_NM': 'STREM_INGESTION'}
 )
 
-# Define the ExternalTaskSensor to monitor the CNTL_FRAMEWORK DAG
-monitor_cntl_framework = ExternalTaskSensor(
-    task_id='monitor_cntl_framework',
-    external_dag_id='CNTL_FRAMEWORK',  # specify the DAG ID of the target DAG
-    external_task_id='task_id_to_monitor',  # specify the task ID within the target DAG
-    mode='poke',  # Change mode to 'poke' for efficiency
-    timeout=7200,  # timeout after 2 hours (adjust as needed)
-    poke_interval=60,  # check every 60 seconds
-    dag=dag,
-)
+
 
 # Set task dependencies
-trigger_cntl_framework >> monitor_cntl_framework
+trigger_cntl_framework 
