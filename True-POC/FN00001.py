@@ -14,10 +14,9 @@ from airflow.sensors.external_task import ExternalTaskSensor
 default_args = {
     'owner': 'airflow',
     'depends_on_past': False,
-    'start_date':datetime.now(),  # Start when activate
+    'start_date': datetime.now(),  # Start when the DAG is activated
     'retries': 1,
     'retry_delay': timedelta(minutes=1),
-
 }
 
 # Define the DAG
