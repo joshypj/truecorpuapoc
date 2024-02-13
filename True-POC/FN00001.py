@@ -17,8 +17,7 @@ default_args = {
     'start_date': datetime.combine(datetime.today(), datetime.min.time()) + timedelta(hours=17),  # Start today at 17:00
     'retries': 1,
     'retry_delay': timedelta(minutes=1),
-    'params': {'STREM_NM': Param("STREM_INGESTION", type="string")},
-    'access_control': {'All': {'can_read', 'can_edit', 'can_delete'}}
+
 }
 
 # Define the DAG
@@ -27,7 +26,9 @@ dag = DAG(
     default_args=default_args,
     description='Running Stream',
     schedule_interval="*/30 * * * *",  # Run every 30 minutes
-    tags=['e2e example', 'ETL', 'spark']
+    tags=['e2e example', 'ETL', 'spark'],
+    params={'STREM_NM': Param("X3_TEST_99_D", type="string")},
+    access_control={'All': {'can_read', 'can_edit', 'can_delete'}}
 )
 
 # Define the TriggerDagRunOperator to trigger CNTL_FRAMEWORK DAG
