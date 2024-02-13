@@ -26,6 +26,8 @@ dag = DAG(
     description='Running Stream',
     schedule_interval="*/30 * * * *",  # Run every 30 minutes
     tags=['e2e example', 'ETL', 'spark']
+    params={'STREM_NM': Param("X3_TEST_99_D", type="string")},
+    access_control={'All': {'can_read', 'can_edit', 'can_delete'}}
 )
 
 # Define the TriggerDagRunOperator to trigger CNTL_FRAMEWORK DAG
