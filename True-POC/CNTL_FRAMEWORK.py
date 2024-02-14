@@ -8,7 +8,8 @@ from airflow.providers.cncf.kubernetes.operators.spark_kubernetes import SparkKu
 from airflow.providers.cncf.kubernetes.sensors.spark_kubernetes import SparkKubernetesSensor
 from airflow.operators.dummy import DummyOperator
 from airflow.operators.dagrun_operator import TriggerDagRunOperator
-import pandas as pd 
+import pandas as pd
+import os
 
 # Define default arguments
 default_args = {
@@ -82,14 +83,32 @@ def processing(**kwargs):
                 dag=dag
             )
             spark_task.execute(context=kwargs)
-
+    os.remove(f"/mnt/shared/toh/processing/{strem_nm}.csv")
 task4 = PythonOperator(
     task_id='processing',
     python_callable=processing,
     dag=dag,
 )
 
-task5 = PythonOperator(
+task5 = SparkKubernetesOperator(
+    task_id='Spark_etl_submit',
+    application_file="Update_log.yaml",
+    do_xcom_push=True,
+    api_group="sparkoperator.hpe.com",
+    enable_impersonation_from_ldap_user=True,
+    dag=dag,
+)
+
+task6 = SparkKubernetesSensor(
+    task_id='Spark_etl_monitor',
+    application_name="{{ ti.xcom_pull(task_ids='Spark_etl_submit')['metadata']['name'] }}",
+    dag=dag,
+    api_group="sparkoperator.hpe.com",
+    attach_log=True,
+    do_xcom_push=True,
+)
+
+task7 = PythonOperator(
     task_id='Data_Loading_Done',
     python_callable=end_job,
     dag=dag,
