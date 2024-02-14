@@ -9,6 +9,7 @@ from airflow.providers.cncf.kubernetes.sensors.spark_kubernetes import SparkKube
 from airflow.operators.dummy import DummyOperator
 from airflow.operators.dagrun_operator import TriggerDagRunOperator
 
+
 # Define default arguments
 default_args = {
     'owner': 'airflow',
