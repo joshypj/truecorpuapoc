@@ -1,20 +1,13 @@
 from datetime import datetime, timedelta
 from airflow import DAG
-from airflow.operators.python_operator import PythonOperator, BranchPythonOperator
-from airflow.models import Param,DagRun
-from airflow.utils.dates import days_ago
-from airflow.utils.helpers import chain
-from airflow.providers.cncf.kubernetes.operators.spark_kubernetes import SparkKubernetesOperator
-from airflow.providers.cncf.kubernetes.sensors.spark_kubernetes import SparkKubernetesSensor
-from airflow.operators.dummy import DummyOperator
 from airflow.operators.dagrun_operator import TriggerDagRunOperator
-from airflow.sensors.external_task import ExternalTaskSensor
+from airflow.utils.dates import days_ago
 
 # Define default arguments
 default_args = {
     'owner': 'airflow',
     'depends_on_past': False,
-    'start_date': datetime.now(),  # Start when the DAG is activated
+    'start_date': days_ago(1),  # Start date fixed to 1 day ago
     'retries': 1,
     'retry_delay': timedelta(minutes=1),
 }
@@ -37,7 +30,5 @@ trigger_cntl_framework = TriggerDagRunOperator(
     params={'STREM_NM': 'STREM_INGESTION'}
 )
 
-
-
 # Set task dependencies
-trigger_cntl_framework 
+trigger_cntl_framework
