@@ -36,6 +36,39 @@ def start_job():
 def end_job():
     print("Data insert to Table Done...")
 
+def read_and_print_file(**kwargs):
+    ti = kwargs['ti']
+    file_path = '/mnt/shared/Toh/Queue.txt'  # Change this to your file path
+    try:
+        with open(file_path, 'r') as file:
+            file_content = file.read()
+            print("Content of the file:")
+            print(file_content)
+            ti.xcom_push(key='file_content', value=file_content)
+    except FileNotFoundError:
+        print(f"File not found at {file_path}")
+
+def condition(**kwargs):
+    parm = kwargs['ti'].xcom_pull(task_ids='read_file', key='file_content')
+    type = parm.split('^|')[-1]
+
+    if type == '1':
+        return 'taskA'
+    else:
+        return 'taskB'
+    
+
+def check_triggered_dag_status(**kwargs):
+    # Retrieve the triggered DAG run
+    dag_run_id = kwargs['ti'].xcom_pull(task_ids='Trigger_dag')
+    dag_run = DagRun.find(dag_id="TEST_CNTL_1", run_id=dag_run_id)
+    
+    # Check if the DAG run exists and print its status
+    if dag_run:
+        print("Status of TEST_CNTL_1:", dag_run[0].state)
+    else:
+        print("No record found for TEST_CNTL_1")
+
 # Define the tasks
 task1 = PythonOperator(
     task_id='Start_Data_Reading',
@@ -61,10 +94,82 @@ task3 = SparkKubernetesSensor(
     do_xcom_push=True,
 )
 
+read_file_task = PythonOperator(
+    task_id='read_file',
+    python_callable=read_and_print_file,
+    provide_context=True,
+    dag=dag,
+)
+
+
+branching_task = BranchPythonOperator(
+    task_id='branching_task',
+    python_callable=condition,
+    dag=dag,
+)
+
+parameter_value = "{{ ti.xcom_pull(task_ids='read_file', key='file_content') }}"
+
+taskA = TriggerDagRunOperator(
+    task_id='taskA',
+    trigger_dag_id="TEST_CNTL_1",
+    do_xcom_push=True,
+    dag=dag,
+    conf={'parm': parameter_value}  # Pass parameters to the triggered DAG run
+)
+
+
+taskB = DummyOperator(
+    task_id='taskB',
+    dag=dag,
+)
+
+
+
+taskAmonitor = PythonOperator(
+    task_id='taskA_monitor',
+    python_callable=check_triggered_dag_status,
+    provide_context=True,
+    dag=dag,
+)
+
+taskBmonitor = DummyOperator(
+    task_id='taskB_monitor',
+    dag=dag,
+)
+
+
+insert_log = SparkKubernetesOperator(
+    task_id='insert_log',
+    application_file="insert_log.yaml",
+    do_xcom_push=True,
+    api_group="sparkoperator.hpe.com",
+    enable_impersonation_from_ldap_user=True,  
+    trigger_rule='one_success',
+    dag=dag,
+)
+
+monitor_insert_log = SparkKubernetesSensor(
+    task_id='monitor_insert_log',
+    application_name="{{ ti.xcom_pull(task_ids='insert_log')['metadata']['name'] }}",
+    dag=dag,
+    api_group="sparkoperator.hpe.com",
+    attach_log=True,
+    do_xcom_push=True,
+)
+
 task4 = PythonOperator(
     task_id='Data_Loading_Done',
     python_callable=end_job,
     dag=dag,
 )
 
-task1 >> task2 >> task3 >> task4
+# Define task dependencies
+task1 >> task2 >> task3 >> read_file_task >> branching_task
+
+branching_task >> [taskA, taskB]
+
+taskA >> taskAmonitor
+taskB >> taskBmonitor
+
+[taskAmonitor, taskBmonitor] >> insert_log >> monitor_insert_log >> task4
