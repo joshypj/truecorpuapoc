@@ -65,7 +65,7 @@ task3 = SparkKubernetesSensor(
 
 def processing(**kwargs):
     strem_nm = kwargs["params"]["STREM_NM"]
-    file_path = f"/mnt/shared/toh/processing/{strem_nm}.csv"
+    file_path = f"/mnt/ezadmin/processing/{strem_nm}.csv"
     
     df = pd.read_csv(file_path)
     for index, row in df.iterrows():
@@ -83,12 +83,18 @@ def processing(**kwargs):
                 dag=dag
             )
             spark_task.execute(context=kwargs)
-    os.remove(f"/mnt/shared/toh/processing/{strem_nm}.csv")
+    os.remove(file_path)
 task4 = PythonOperator(
     task_id='processing',
     python_callable=processing,
     dag=dag,
 )
+
+def check_existing_spark_application(task_instance, **kwargs):
+    # Your logic to check if the Spark application already exists
+    # You may need to interact with the Kubernetes API or use other tools to perform this check
+    # Return True if the application exists, False otherwise
+    return True
 
 task5 = SparkKubernetesOperator(
     task_id='Update_log',
@@ -97,6 +103,8 @@ task5 = SparkKubernetesOperator(
     api_group="sparkoperator.hpe.com",
     enable_impersonation_from_ldap_user=True,
     dag=dag,
+    python_callable=check_existing_spark_application,  # Callable function to check existing Spark application
+    provide_context=True  # Ensure that context is provided to the callable function
 )
 
 task6 = SparkKubernetesSensor(
