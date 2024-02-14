@@ -115,12 +115,13 @@ def processing(**kwargs):
             dest_path = params.split('^|')[1]
             print(source_path, dest_path)
             
-            # Pass parameters to Spark job using SparkSubmitOperator
-            spark_task = SparkSubmitOperator(
+            # Pass parameters to Spark job using SparkKubernetesOperator
+            spark_task = SparkKubernetesOperator(
                 task_id=f"spark_job_{index}",
+                namespace="default",
                 application="/mnt/shared/Toh/test.py",
                 application_args=[source_path, dest_path],
-                conn_id="spark_default",
+                kubernetes_conn_id="kubernetes_default",
                 conf=yaml_data,  # Pass YAML data as configuration
                 dag=dag
             )
