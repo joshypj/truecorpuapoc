@@ -1,0 +1,78 @@
+apiVersion: sparkoperator.hpe.com/v1beta2
+kind: SparkApplication
+metadata:
+  creationTimestamp: 2024-01-24T05:12:14Z
+  generation: 1
+  labels:
+    hpe-ezua/app: spark
+    hpe-ezua/type: app-service-user
+    sidecar.istio.io/inject: "false"
+  name: ingestion-fn00001
+  namespace: ezadmin
+  resourceVersion: "85001955"
+  uid: c6a60b39-6e7f-4142-b43c-cafefceeae1b
+spec:
+  driver:
+    coreLimit: "1"
+    cores: 1
+    labels:
+      version: 3.4.1
+    memory: 1g
+    serviceAccount: hpe-ezadmin
+    volumeMounts:
+      - mountPath: /opt/mapr/spark/sparkhs-eventlog-storage
+        name: sparkhs-eventlog-storage
+      - mountPath: /mounts/ezadmin-volume
+        name: ezadmin-volume
+      - mountPath: /mounts/shared-volume
+        name: shared-volume
+  executor:
+    coreLimit: "1"
+    cores: 1
+    instances: 1
+    labels:
+      version: 3.4.1
+    memory: 1g
+    volumeMounts:
+      - mountPath: /mounts/ezadmin-volume
+        name: ezadmin-volume
+      - mountPath: /mounts/shared-volume
+        name: shared-volume
+  image: gcr.io/mapr-252711/spark-py-3.4.1:v3.4.1
+  imagePullPolicy: Always
+  imagePullSecrets:
+    - imagepull
+  mainApplicationFile: local:///mounts/shared-volume/truecorp_usecases/Ingestion/File/Ingestion_FN00001.py
+  mode: cluster
+  restartPolicy:
+    type: Never
+  sparkConf:
+    spark.driver.extraJavaOptions: -Dcom.amazonaws.sdk.disableCertChecking=true
+    spark.eventLog.dir: file:///opt/mapr/spark/sparkhs-eventlog-storage
+    spark.eventLog.enabled: "true"
+    spark.executor.extraJavaOptions: -Dcom.amazonaws.sdk.disableCertChecking=true
+    spark.executorEnv.PRESTO_ACCESS_TOKEN: eyJhbGciOiJSUzI1NiIsInR5cCIgOiAiSldUIiwia2lkIiA6ICJwNTdWNHFEVldrTlp6Zkw4Z0h1STNmRHdtTFQ0VjlMN05wWDFMWkdOWjg4In0.eyJleHAiOjE3MDY2Njc3NjksImlhdCI6MTcwNjA2Mjk3MCwiYXV0aF90aW1lIjoxNzA2MDYyOTY5LCJqdGkiOiIzZGExNWFiYS0xZmVhLTRmYWQtYjFjMC1mYTRlN2EwNjY4YTIiLCJpc3MiOiJodHRwczovL2tleWNsb2FrLnRydWVwb2MuZXphcGFjLmNvbS9yZWFsbXMvVUEiLCJhdWQiOiJ1YSIsInN1YiI6ImQxYTliNTNjLWEzNGItNDUzNy05YTMzLWNjZjBjZDFjY2VjMSIsInR5cCI6IklEIiwiYXpwIjoidWEiLCJub25jZSI6Ik5rb0g4c0ZndWZLMi04cWFXb3Nqdk9sNmFDOG85LXlMTzVPUXhQX2o2VkUiLCJzZXNzaW9uX3N0YXRlIjoiY2IyY2I4OGUtOGFmMi00ZWI3LTllYTktMjljM2JhOTA0NzA2IiwiYXRfaGFzaCI6IlF6V29pakk0UkNhU0VYZVhKZGlmSGciLCJhY3IiOiIxIiwic2lkIjoiY2IyY2I4OGUtOGFmMi00ZWI3LTllYTktMjljM2JhOTA0NzA2IiwidWlkIjoiNjAwMCIsImVtYWlsX3ZlcmlmaWVkIjpmYWxzZSwiZ2lkIjoiNTAwNSIsIm5hbWUiOiJlemFkbWluIHRlc3QiLCJncm91cHMiOlsidWEtZW5hYmxlZCIsIm9mZmxpbmVfYWNjZXNzIiwiYWRtaW4iLCJ1bWFfYXV0aG9yaXphdGlvbiIsImRlZmF1bHQtcm9sZXMtdWEiXSwicHJlZmVycmVkX3VzZXJuYW1lIjoiZXphZG1pbiIsImdpdmVuX25hbWUiOiJlemFkbWluIiwicG9zaXhfdXNlcm5hbWUiOiJlemFkbWluIiwiZmFtaWx5X25hbWUiOiJ0ZXN0IiwiZW1haWwiOiJlemFkbWluQGV6YXBhYy5jb20ifQ.ikulIpj1vRJ9XbeZkr1paynYLkFvw6nj1gkTZ18w8_iSFWxGd5vbsu61dMLtHZy-nx-kLQakUlV5eojIhI1l5ERO2RR2JBT_EsD_-kLW0osy6bKzUdVeQk4esQwyjgPZvlj2cqd0LY4eumnfr4lopnNaIElmgiRHgWTCkAcZpeEAjnxaG4QiNhbNhnlI2p-i3XOimo0BcuGsJOQGpgMxR_ENEgdDF2jK7-gCOZPSsVL8D0VbffdwCLiKSc_sS8oWvlR_VoKL1AGdaaLcrFYrlQRfpE2nt_RNYufoIwbo_VLp4RRSAQkVCH8A0_EeI58yRDtAuNk7jKvw8ppf_6D6Ag
+    spark.executorEnv.SPARK_USER: ezadmin
+    spark.hadoop.fs.s3a.access.key: PO93KAAP2YTG4RHMG499FENAFWYUH9Q91XOJYQ6UNY4R0XUVY35A53L47
+    spark.hadoop.fs.s3a.endpoint: https://54.251.141.200:9000
+    spark.hadoop.fs.s3a.impl: org.apache.hadoop.fs.s3a.S3AFileSystem
+    spark.hadoop.fs.s3a.path.style.access: "true"
+    spark.hadoop.fs.s3a.secret.key: UV0H7MFJI96MCFY03IMD9X6ZT8H43B3GDS8SXGA4Z7FH0QT2DSZV3ZCKTHS93Z
+    spark.kubernetes.driverEnv.PRESTO_ACCESS_TOKEN: eyJhbGciOiJSUzI1NiIsInR5cCIgOiAiSldUIiwia2lkIiA6ICJwNTdWNHFEVldrTlp6Zkw4Z0h1STNmRHdtTFQ0VjlMN05wWDFMWkdOWjg4In0.eyJleHAiOjE3MDY2Njc3NjksImlhdCI6MTcwNjA2Mjk3MCwiYXV0aF90aW1lIjoxNzA2MDYyOTY5LCJqdGkiOiIzZGExNWFiYS0xZmVhLTRmYWQtYjFjMC1mYTRlN2EwNjY4YTIiLCJpc3MiOiJodHRwczovL2tleWNsb2FrLnRydWVwb2MuZXphcGFjLmNvbS9yZWFsbXMvVUEiLCJhdWQiOiJ1YSIsInN1YiI6ImQxYTliNTNjLWEzNGItNDUzNy05YTMzLWNjZjBjZDFjY2VjMSIsInR5cCI6IklEIiwiYXpwIjoidWEiLCJub25jZSI6Ik5rb0g4c0ZndWZLMi04cWFXb3Nqdk9sNmFDOG85LXlMTzVPUXhQX2o2VkUiLCJzZXNzaW9uX3N0YXRlIjoiY2IyY2I4OGUtOGFmMi00ZWI3LTllYTktMjljM2JhOTA0NzA2IiwiYXRfaGFzaCI6IlF6V29pakk0UkNhU0VYZVhKZGlmSGciLCJhY3IiOiIxIiwic2lkIjoiY2IyY2I4OGUtOGFmMi00ZWI3LTllYTktMjljM2JhOTA0NzA2IiwidWlkIjoiNjAwMCIsImVtYWlsX3ZlcmlmaWVkIjpmYWxzZSwiZ2lkIjoiNTAwNSIsIm5hbWUiOiJlemFkbWluIHRlc3QiLCJncm91cHMiOlsidWEtZW5hYmxlZCIsIm9mZmxpbmVfYWNjZXNzIiwiYWRtaW4iLCJ1bWFfYXV0aG9yaXphdGlvbiIsImRlZmF1bHQtcm9sZXMtdWEiXSwicHJlZmVycmVkX3VzZXJuYW1lIjoiZXphZG1pbiIsImdpdmVuX25hbWUiOiJlemFkbWluIiwicG9zaXhfdXNlcm5hbWUiOiJlemFkbWluIiwiZmFtaWx5X25hbWUiOiJ0ZXN0IiwiZW1haWwiOiJlemFkbWluQGV6YXBhYy5jb20ifQ.ikulIpj1vRJ9XbeZkr1paynYLkFvw6nj1gkTZ18w8_iSFWxGd5vbsu61dMLtHZy-nx-kLQakUlV5eojIhI1l5ERO2RR2JBT_EsD_-kLW0osy6bKzUdVeQk4esQwyjgPZvlj2cqd0LY4eumnfr4lopnNaIElmgiRHgWTCkAcZpeEAjnxaG4QiNhbNhnlI2p-i3XOimo0BcuGsJOQGpgMxR_ENEgdDF2jK7-gCOZPSsVL8D0VbffdwCLiKSc_sS8oWvlR_VoKL1AGdaaLcrFYrlQRfpE2nt_RNYufoIwbo_VLp4RRSAQkVCH8A0_EeI58yRDtAuNk7jKvw8ppf_6D6Ag
+    spark.kubernetes.driverEnv.SPARK_USER: ezadmin
+    spark.mapr.user.secret: hpe-autotix-generated-secret-ydygpl
+    spark.mapr.user.secret.autogen: "true"
+    spark.sql.catalog.spark_catalog: org.apache.spark.sql.delta.catalog.DeltaCatalog
+    spark.sql.extensions: io.delta.sql.DeltaSparkSessionExtension
+  sparkVersion: 3.4.1
+  type: Python
+  volumes:
+    - name: sparkhs-eventlog-storage
+      persistentVolumeClaim:
+        claimName: ezadmin-sparkhs-pvc
+    - name: ezadmin-volume
+      persistentVolumeClaim:
+        claimName: user-pvc
+    - name: shared-volume
+      persistentVolumeClaim:
+        claimName: kubeflow-shared-pvc
