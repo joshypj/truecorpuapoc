@@ -32,6 +32,11 @@ spec:
     instances: 1
     labels:
       version: 3.4.1
+    env:
+    - name: SOURCE_PATH
+      value: "{{ params.source_path }}"
+    - name: DEST_PATH
+      value: "{{ params.dest_path }}"
     memory: 1g
     volumeMounts:
       - mountPath: /mounts/ezadmin-volume
@@ -42,7 +47,7 @@ spec:
   imagePullPolicy: Always
   imagePullSecrets:
     - imagepull
-  mainApplicationFile: local:///mounts/shared-volume/truecorp_usecases/Ingestion/File/Ingestion_FN00001.py
+  mainApplicationFile: local:///mnt/shared/Toh/test.py
   mode: cluster
   restartPolicy:
     type: Never
