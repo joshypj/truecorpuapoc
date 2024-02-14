@@ -115,6 +115,8 @@ def processing(**kwargs):
             spark_task = SparkKubernetesOperator(
                 task_id=f"spark_job_{row['prcs_nm']}",
                 application_file = "test.yaml",
+                application_args=["--source_path", "{{ task_instance.xcom_pull(task_ids='processing', key='source_path') }}",
+                                   "--dest_path", "{{ task_instance.xcom_pull(task_ids='processing', key='dest_path') }}"],
                 do_xcom_push=True,
                 api_group="sparkoperator.hpe.com",
                 enable_impersonation_from_ldap_user=True,
