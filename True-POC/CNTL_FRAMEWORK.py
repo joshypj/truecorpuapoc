@@ -61,10 +61,26 @@ task3 = SparkKubernetesSensor(
     do_xcom_push=True,
 )
 
+def processing(**kwargs):
+    ti = kwargs['ti']
+    print(kwargs["params"]["STREM_NM"])
+    # file_path = '/mnt/shared/Toh/Queue.txt'
+
+    # if type == '1':
+    #     return 'taskA'
+    # else:
+    #     return 'taskB'
+
 task4 = PythonOperator(
+    task_id='processing',
+    python_callable=processing,
+    dag=dag,
+)
+
+task5 = PythonOperator(
     task_id='Data_Loading_Done',
     python_callable=end_job,
     dag=dag,
 )
 
-task1 >> task2 >> task3 >> task4
+task1 >> task2 >> task3 >> task4 >> task5
