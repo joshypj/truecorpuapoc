@@ -10,6 +10,9 @@ from airflow.operators.dummy import DummyOperator
 from airflow.operators.dagrun_operator import TriggerDagRunOperator
 import subprocess
 import pandas as pd
+from airflow.providers.apache.spark.operators.spark_submit import SparkSubmitOperator
+
+
 
 # Define default arguments
 default_args = {
@@ -97,28 +100,36 @@ def check_triggered_dag_status(**kwargs):
 # )
 
 def processing(**kwargs):
-    ti = kwargs['ti']
-    strem_nm = (kwargs["params"]["STREM_NM"])
+    strem_nm = kwargs["params"]["STREM_NM"]
     file_path = f"/mnt/shared/Toh/processing/{strem_nm}.csv"
+    
+    # Load parameters from YAML file
+    with open("/path/to/your/yaml/file.yaml", "r") as yaml_file:
+        yaml_data = yaml.safe_load(yaml_file)
+    
     df = pd.read_csv(file_path)
-    for index, row in df.iterrows() :
+    for index, row in df.iterrows():
         params = row['parm']
-        if row['prcs_typ'] == 1 :
+        if row['prcs_typ'] == 1:
             source_path = params.split('^|')[0]
             dest_path = params.split('^|')[1]
-            print(source_path,dest_path)
-            result = subprocess.run(["python", "/mnt/shared/Toh/test.py", source_path, dest_path], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-            print("Output:", result.stdout.decode())
-            print("Errors:", result.stderr.decode())
-
-    # if type == '1':
-    #     return 'taskA'
-    # else:
-    #     return 'taskB'
+            print(source_path, dest_path)
+            
+            # Pass parameters to Spark job using SparkSubmitOperator
+            spark_task = SparkSubmitOperator(
+                task_id=f"spark_job_{index}",
+                application="/mnt/shared/Toh/test.py",
+                application_args=[source_path, dest_path],
+                conn_id="spark_default",
+                conf=yaml_data,  # Pass YAML data as configuration
+                dag=dag
+            )
+            spark_task.execute(context=kwargs)
 
 task4 = PythonOperator(
     task_id='processing',
     python_callable=processing,
+    provide_context=True,
     dag=dag,
 )
 
