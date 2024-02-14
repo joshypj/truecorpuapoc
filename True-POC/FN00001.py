@@ -17,7 +17,7 @@ dag = DAG(
     'FN00001',
     default_args=default_args,
     description='Running Stream',
-    schedule_interval="*/30 * * * *",  # Run every 30 minutes
+    schedule_interval="*/10 * * * *",  # Run every 30 minutes
     tags=['e2e example', 'ETL', 'spark'],
     access_control={'All': {'can_read', 'can_edit', 'can_delete'}}
 )
