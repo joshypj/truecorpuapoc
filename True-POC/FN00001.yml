@@ -33,7 +33,7 @@ spec:
   mode: cluster
   image: "gcr.io/mapr-252711/spark-3.5.0:v3.5.0"
   imagePullPolicy: Always
-  mainApplicationFile: "local:///mnt/shared/toh/CNTL_FRAMEWORK.py"
+  mainApplicationFile: "local:///mnt/shared/toh/FN00001.py"
   restartPolicy:
     type: Never
   imagePullSecrets:
