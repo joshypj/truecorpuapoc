@@ -103,6 +103,7 @@ def processing(**kwargs):
     df = pd.read_csv(file_path)
     for index, row in df.iterrows() :
         params = row['parm']
+        print('test')
         if row['prcs_typ'] == '1' :
             source_path = params.split('^|')[0]
             dest_path = params.split('^|')[1]
