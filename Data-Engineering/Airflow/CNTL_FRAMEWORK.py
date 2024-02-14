@@ -107,7 +107,7 @@ def processing(**kwargs):
             source_path = params.split('^|')[0]
             dest_path = params.split('^|')[1]
             print(source_path,dest_path)
-            result = subprocess.run(["python", "/mounts/shared-volume/shared/Toh/test.py", source_path, dest_path], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            result = subprocess.run(["python", "/mnt/shared/Toh/test.py", source_path, dest_path], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
             print("Output:", result.stdout.decode())
             print("Errors:", result.stderr.decode())
 
