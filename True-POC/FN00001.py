@@ -7,7 +7,7 @@ from airflow.utils.dates import days_ago
 default_args = {
     'owner': 'airflow',
     'depends_on_past': False,
-    'start_date': days_ago(2),  # Start date fixed to 2 days ago
+    'start_date': days_ago(1),  # Start date fixed to 2 days ago
     'retries': 1,
     'retry_delay': timedelta(minutes=1),
 }
