@@ -11,7 +11,7 @@ from airflow.operators.dagrun_operator import TriggerDagRunOperator
 import subprocess
 import pandas as pd
 from airflow.providers.apache.spark.operators.spark_submit import SparkSubmitOperator
-
+import yaml
 
 
 # Define default arguments
@@ -104,7 +104,7 @@ def processing(**kwargs):
     file_path = f"/mnt/shared/Toh/processing/{strem_nm}.csv"
     
     # Load parameters from YAML file
-    with open("/path/to/your/yaml/file.yaml", "r") as yaml_file:
+    with open("CNTL_FRAMEWORK.yaml", "r") as yaml_file:
         yaml_data = yaml.safe_load(yaml_file)
     
     df = pd.read_csv(file_path)
