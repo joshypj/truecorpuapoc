@@ -101,7 +101,8 @@ def processing(**kwargs):
     strem_nm = (kwargs["params"]["STREM_NM"])
     file_path = f"/mnt/shared/Toh/processing/{strem_nm}.csv"
     df = pd.read_csv(file_path)
-    df.show()
+    for index, row in df.iterrows() :
+        print(index, row)
 
     # if type == '1':
     #     return 'taskA'
