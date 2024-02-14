@@ -8,7 +8,7 @@ from airflow.providers.cncf.kubernetes.operators.spark_kubernetes import SparkKu
 from airflow.providers.cncf.kubernetes.sensors.spark_kubernetes import SparkKubernetesSensor
 from airflow.operators.dummy import DummyOperator
 from airflow.operators.dagrun_operator import TriggerDagRunOperator
-
+import pandas as pd 
 
 # Define default arguments
 default_args = {
@@ -63,14 +63,25 @@ task3 = SparkKubernetesSensor(
 )
 
 def processing(**kwargs):
-    ti = kwargs['ti']
-    print(kwargs["params"]["STREM_NM"])
-    # file_path = '/mnt/shared/Toh/Queue.txt'
-
-    # if type == '1':
-    #     return 'taskA'
-    # else:
-    #     return 'taskB'
+    strem_nm = kwargs["params"]["STREM_NM"]
+    file_path = f"/mnt/shared/toh/processing/{strem_nm}.csv"
+    
+    df = pd.read_csv(file_path)
+    for index, row in df.iterrows():
+        params = row['parm']
+        if row['prcs_typ'] == 1:
+            source_path = params.split('^|')[0]
+            dest_path = params.split('^|')[1]
+            print(source_path, dest_path)
+            
+            # Pass parameters to the triggered DAG using TriggerDagRunOperator
+            spark_task = TriggerDagRunOperator(
+                task_id=f"spark_job_{row['prcs_nm']}",
+                trigger_dag_id="FN00001",
+                conf={'source_path': source_path, 'dest_path': dest_path},
+                dag=dag
+            )
+            spark_task.execute(context=kwargs)
 
 task4 = PythonOperator(
     task_id='processing',
