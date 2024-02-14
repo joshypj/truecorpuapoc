@@ -111,16 +111,12 @@ def processing(**kwargs):
             dest_path = params.split('^|')[1]
             print(source_path, dest_path)
             
-            # Pass parameters to Spark job using SparkKubernetesOperator
-            spark_task = SparkKubernetesOperator(
+            # Pass parameters to the triggered DAG using TriggerDagRunOperator
+            spark_task = TriggerDagRunOperator(
                 task_id=f"spark_job_{row['prcs_nm']}",
-                application_file = "test_cntl.yaml",
-                application_args=["--source_path", source_path,
-                                   "--dest_path", dest_path],
-                do_xcom_push=True,
-                api_group="sparkoperator.hpe.com",
-                enable_impersonation_from_ldap_user=True,
-                dag=dag,
+                trigger_dag_id="TEST_CNTL_1",
+                conf={'source_path': source_path, 'dest_path': dest_path},
+                dag=dag
             )
             spark_task.execute(context=kwargs)
 
