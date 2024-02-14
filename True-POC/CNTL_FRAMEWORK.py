@@ -91,7 +91,7 @@ task4 = PythonOperator(
 )
 
 task5 = SparkKubernetesOperator(
-    task_id='Spark_etl_submit',
+    task_id='Update_log',
     application_file="Update_log.yaml",
     do_xcom_push=True,
     api_group="sparkoperator.hpe.com",
@@ -100,8 +100,8 @@ task5 = SparkKubernetesOperator(
 )
 
 task6 = SparkKubernetesSensor(
-    task_id='Spark_etl_monitor',
-    application_name="{{ ti.xcom_pull(task_ids='Spark_etl_submit')['metadata']['name'] }}",
+    task_id='Update_log_monitor',
+    application_name="{{ ti.xcom_pull(task_ids='Update_log')['metadata']['name'] }}",
     dag=dag,
     api_group="sparkoperator.hpe.com",
     attach_log=True,
@@ -114,4 +114,4 @@ task7 = PythonOperator(
     dag=dag,
 )
 
-task1 >> task2 >> task3 >> task4 >> task5
+task1 >> task2 >> task3 >> task4 >> task5 >> task6 >> task7
