@@ -72,29 +72,29 @@ def check_triggered_dag_status(**kwargs):
         print("No record found for TEST_CNTL_1")
 
 # Define the tasks
-task1 = PythonOperator(
-    task_id='Start_Data_Reading',
-    python_callable=start_job,
-    dag=dag,
-)
+# task1 = PythonOperator(
+#     task_id='Start_Data_Reading',
+#     python_callable=start_job,
+#     dag=dag,
+# )
 
-task2 = SparkKubernetesOperator(
-    task_id='Spark_etl_submit',
-    application_file="CNTL_FRAMEWORK.yaml",
-    do_xcom_push=True,
-    api_group="sparkoperator.hpe.com",
-    enable_impersonation_from_ldap_user=True,
-    dag=dag,
-)
+# task2 = SparkKubernetesOperator(
+#     task_id='Spark_etl_submit',
+#     application_file="CNTL_FRAMEWORK.yaml",
+#     do_xcom_push=True,
+#     api_group="sparkoperator.hpe.com",
+#     enable_impersonation_from_ldap_user=True,
+#     dag=dag,
+# )
 
-task3 = SparkKubernetesSensor(
-    task_id='Spark_etl_monitor',
-    application_name="{{ ti.xcom_pull(task_ids='Spark_etl_submit')['metadata']['name'] }}",
-    dag=dag,
-    api_group="sparkoperator.hpe.com",
-    attach_log=True,
-    do_xcom_push=True,
-)
+# task3 = SparkKubernetesSensor(
+#     task_id='Spark_etl_monitor',
+#     application_name="{{ ti.xcom_pull(task_ids='Spark_etl_submit')['metadata']['name'] }}",
+#     dag=dag,
+#     api_group="sparkoperator.hpe.com",
+#     attach_log=True,
+#     do_xcom_push=True,
+# )
 
 def processing(**kwargs):
     ti = kwargs['ti']
@@ -114,10 +114,11 @@ task4 = PythonOperator(
     dag=dag,
 )
 
-task5 = PythonOperator(
-    task_id='Data_Loading_Done',
-    python_callable=end_job,
-    dag=dag,
-)
+# task5 = PythonOperator(
+#     task_id='Data_Loading_Done',
+#     python_callable=end_job,
+#     dag=dag,
+# )
 
-task1 >> task2 >> task3 >> task4 >> task5
+# task1 >> task2 >> task3 >> task4 >> task5
+task4
