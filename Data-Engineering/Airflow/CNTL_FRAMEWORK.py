@@ -81,14 +81,14 @@ def check_triggered_dag_status(**kwargs):
 #     dag=dag,
 # )
 
-# task2 = SparkKubernetesOperator(
-#     task_id='Spark_etl_submit',
-#     application_file="CNTL_FRAMEWORK.yaml",
-#     do_xcom_push=True,
-#     api_group="sparkoperator.hpe.com",
-#     enable_impersonation_from_ldap_user=True,
-#     dag=dag,
-# )
+task2 = SparkKubernetesOperator(
+    task_id='Spark_etl_submit',
+    application_file="CNTL_FRAMEWORK.yaml",
+    do_xcom_push=True,
+    api_group="sparkoperator.hpe.com",
+    enable_impersonation_from_ldap_user=True,
+    dag=dag,
+)
 
 # task3 = SparkKubernetesSensor(
 #     task_id='Spark_etl_monitor',
@@ -103,10 +103,6 @@ def processing(**kwargs):
     strem_nm = kwargs["params"]["STREM_NM"]
     file_path = f"/mnt/shared/Toh/processing/{strem_nm}.csv"
     
-    # Load parameters from YAML file
-    with open("/mnt/shared/Toh/test.yaml", "r") as yaml_file:
-        yaml_data = yaml.safe_load(yaml_file)
-    
     df = pd.read_csv(file_path)
     for index, row in df.iterrows():
         params = row['parm']
@@ -117,13 +113,12 @@ def processing(**kwargs):
             
             # Pass parameters to Spark job using SparkKubernetesOperator
             spark_task = SparkKubernetesOperator(
-                task_id=f"spark_job_{index}",
-                namespace="default",
-                application="/mnt/shared/Toh/test.py",
-                application_args=[source_path, dest_path],
-                kubernetes_conn_id="kubernetes_default",
-                conf=yaml_data,  # Pass YAML data as configuration
-                dag=dag
+                task_id=f"spark_job_{row['prcs_nm']}",
+                application_file = "test.yaml",
+                do_xcom_push=True,
+                api_group="sparkoperator.hpe.com",
+                enable_impersonation_from_ldap_user=True,
+                dag=dag,
             )
             spark_task.execute(context=kwargs)
 
