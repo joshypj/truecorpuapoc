@@ -90,12 +90,6 @@ task4 = PythonOperator(
     dag=dag,
 )
 
-def check_existing_spark_application(task_instance, **kwargs):
-    # Your logic to check if the Spark application already exists
-    # You may need to interact with the Kubernetes API or use other tools to perform this check
-    # Return True if the application exists, False otherwise
-    return True
-
 task5 = SparkKubernetesOperator(
     task_id='Update_log',
     application_file="Update_log.yaml",
@@ -103,8 +97,6 @@ task5 = SparkKubernetesOperator(
     api_group="sparkoperator.hpe.com",
     enable_impersonation_from_ldap_user=True,
     dag=dag,
-    python_callable=check_existing_spark_application,  # Callable function to check existing Spark application
-    provide_context=True  # Ensure that context is provided to the callable function
 )
 
 task6 = SparkKubernetesSensor(
