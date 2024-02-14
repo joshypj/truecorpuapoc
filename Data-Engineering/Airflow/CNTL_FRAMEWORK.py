@@ -104,7 +104,7 @@ def processing(**kwargs):
     file_path = f"/mnt/shared/Toh/processing/{strem_nm}.csv"
     
     # Load parameters from YAML file
-    with open("CNTL_FRAMEWORK.yaml", "r") as yaml_file:
+    with open("/mnt/shared/Toh/test.yaml", "r") as yaml_file:
         yaml_data = yaml.safe_load(yaml_file)
     
     df = pd.read_csv(file_path)
