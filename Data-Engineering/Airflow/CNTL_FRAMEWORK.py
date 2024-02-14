@@ -9,6 +9,7 @@ from airflow.providers.cncf.kubernetes.sensors.spark_kubernetes import SparkKube
 from airflow.operators.dummy import DummyOperator
 from airflow.operators.dagrun_operator import TriggerDagRunOperator
 import subprocess
+import pandas as pd
 
 # Define default arguments
 default_args = {
@@ -97,8 +98,10 @@ task3 = SparkKubernetesSensor(
 
 def processing(**kwargs):
     ti = kwargs['ti']
-    print(kwargs["params"]["STREM_NM"])
-    # file_path = '/mnt/shared/Toh/Queue.txt'
+    strem_nm = (kwargs["params"]["STREM_NM"])
+    file_path = f"/mnt/shared/Toh/processing/{strem_nm}.csv"
+    df = pd.read_csv(file_path)
+    df.show()
 
     # if type == '1':
     #     return 'taskA'
