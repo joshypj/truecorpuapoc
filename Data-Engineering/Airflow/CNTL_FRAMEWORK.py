@@ -81,14 +81,14 @@ def check_triggered_dag_status(**kwargs):
 #     dag=dag,
 # )
 
-task2 = SparkKubernetesOperator(
-    task_id='Spark_etl_submit',
-    application_file="CNTL_FRAMEWORK.yaml",
-    do_xcom_push=True,
-    api_group="sparkoperator.hpe.com",
-    enable_impersonation_from_ldap_user=True,
-    dag=dag,
-)
+# task2 = SparkKubernetesOperator(
+#     task_id='Spark_etl_submit',
+#     application_file="CNTL_FRAMEWORK.yaml",
+#     do_xcom_push=True,
+#     api_group="sparkoperator.hpe.com",
+#     enable_impersonation_from_ldap_user=True,
+#     dag=dag,
+# )
 
 # task3 = SparkKubernetesSensor(
 #     task_id='Spark_etl_monitor',
