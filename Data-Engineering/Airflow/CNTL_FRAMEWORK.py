@@ -102,7 +102,14 @@ def processing(**kwargs):
     file_path = f"/mnt/shared/Toh/processing/{strem_nm}.csv"
     df = pd.read_csv(file_path)
     for index, row in df.iterrows() :
-        print(index, row)
+        params = row['parm']
+        if row['prcs_type'] == '1' :
+            source_path = params.split('^|')[0]
+            dest_path = params.split('^|')[1]
+            print(source_path,dest_path)
+            result = subprocess.run(["python", "/mounts/shared-volume/shared/toh/test.py", source_path, dest_path], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            print("Output:", result.stdout.decode())
+            print("Errors:", result.stderr.decode())
 
     # if type == '1':
     #     return 'taskA'
