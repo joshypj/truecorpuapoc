@@ -7,7 +7,7 @@ from airflow.utils.dates import days_ago
 default_args = {
     'owner': 'airflow',
     'depends_on_past': False,
-    'start_date': days_ago(1),  # Start date fixed to 1 day ago
+    'start_date': days_ago(2),  # Start date fixed to 2 days ago
     'retries': 1,
     'retry_delay': timedelta(minutes=1),
 }
@@ -17,7 +17,7 @@ dag = DAG(
     'FN00001',
     default_args=default_args,
     description='Running Stream',
-    schedule_interval="*/10 * * * *",  # Run every 30 minutes
+    schedule_interval="@daily",  # Run daily at midnight
     tags=['e2e example', 'ETL', 'spark'],
     access_control={'All': {'can_read', 'can_edit', 'can_delete'}}
 )
