@@ -94,82 +94,26 @@ task3 = SparkKubernetesSensor(
     do_xcom_push=True,
 )
 
-read_file_task = PythonOperator(
-    task_id='read_file',
-    python_callable=read_and_print_file,
-    provide_context=True,
-    dag=dag,
-)
+def processing(**kwargs):
+    ti = kwargs['ti']
+    print(kwargs["params"]["STREM_NM"])
+    # file_path = '/mnt/shared/Toh/Queue.txt'
 
-
-branching_task = BranchPythonOperator(
-    task_id='branching_task',
-    python_callable=condition,
-    dag=dag,
-)
-
-parameter_value = "{{ ti.xcom_pull(task_ids='read_file', key='file_content') }}"
-
-taskA = TriggerDagRunOperator(
-    task_id='taskA',
-    trigger_dag_id="TEST_CNTL_1",
-    do_xcom_push=True,
-    dag=dag,
-    conf={'parm': parameter_value}  # Pass parameters to the triggered DAG run
-)
-
-
-taskB = DummyOperator(
-    task_id='taskB',
-    dag=dag,
-)
-
-
-
-taskAmonitor = PythonOperator(
-    task_id='taskA_monitor',
-    python_callable=check_triggered_dag_status,
-    provide_context=True,
-    dag=dag,
-)
-
-taskBmonitor = DummyOperator(
-    task_id='taskB_monitor',
-    dag=dag,
-)
-
-
-insert_log = SparkKubernetesOperator(
-    task_id='insert_log',
-    application_file="insert_log.yaml",
-    do_xcom_push=True,
-    api_group="sparkoperator.hpe.com",
-    enable_impersonation_from_ldap_user=True,  
-    trigger_rule='one_success',
-    dag=dag,
-)
-
-monitor_insert_log = SparkKubernetesSensor(
-    task_id='monitor_insert_log',
-    application_name="{{ ti.xcom_pull(task_ids='insert_log')['metadata']['name'] }}",
-    dag=dag,
-    api_group="sparkoperator.hpe.com",
-    attach_log=True,
-    do_xcom_push=True,
-)
+    # if type == '1':
+    #     return 'taskA'
+    # else:
+    #     return 'taskB'
 
 task4 = PythonOperator(
+    task_id='processing',
+    python_callable=processing,
+    dag=dag,
+)
+
+task5 = PythonOperator(
     task_id='Data_Loading_Done',
     python_callable=end_job,
     dag=dag,
 )
 
-# Define task dependencies
-task1 >> task2 >> task3 >> read_file_task >> branching_task
-
-branching_task >> [taskA, taskB]
-
-taskA >> taskAmonitor
-taskB >> taskBmonitor
-
-[taskAmonitor, taskBmonitor] >> insert_log >> monitor_insert_log >> task4
+task1 >> task2 >> task3 >> task4 >> task5
