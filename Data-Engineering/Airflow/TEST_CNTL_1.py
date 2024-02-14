@@ -19,7 +19,8 @@ dag = DAG(
     description='Banking-data-demo',
     schedule_interval=None,
     tags=['e2e example','ETL', 'spark'],
-    params={'parm': Param("", type="string")},
+    params={'source_path': Param("", type="string"),
+            'dest_path': Param("", type="string")},
     # params={
     #     'username': Param("hpedemo-user01", type="string"),
     #     's3_secret_name': Param("spark-s3-creds", type="string")
