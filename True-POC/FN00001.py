@@ -21,8 +21,6 @@ dag = DAG(
     description='Running Stream',
     schedule_interval=None,  
     tags=['e2e example', 'ETL', 'spark'],
-    params={'source_path': Param("", type="string"),
-            'dest_path': Param("", type="string")},
     access_control={'All': {'can_read', 'can_edit', 'can_delete'}}
 )
 
