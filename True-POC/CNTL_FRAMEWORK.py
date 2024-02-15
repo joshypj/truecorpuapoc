@@ -31,9 +31,10 @@ dag = DAG(
     access_control={'All': {'can_read', 'can_edit', 'can_delete'}}
 )
 
-# Define Python functions
-def start_job():
+def start_job(**kwargs):
     print("Start ETL by Query...")
+    strem_nm = kwargs['dag_run'].conf.get('STREM_NM')
+    print(f"Parameter STREM_NM: {strem_nm}")
 
 def end_job():
     print("Data insert to Table Done...")
@@ -42,6 +43,7 @@ def end_job():
 task1 = PythonOperator(
     task_id='Start_Data_Reading',
     python_callable=start_job,
+    provide_context=True,  # This is important to access the dag_run object
     dag=dag,
 )
 
@@ -69,4 +71,5 @@ task4 = PythonOperator(
     dag=dag,
 )
 
+# Set task dependencies
 task1 >> task2 >> task3 >> task4
