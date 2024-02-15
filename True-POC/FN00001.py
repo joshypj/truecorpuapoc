@@ -3,10 +3,6 @@ from airflow import DAG
 from airflow.operators.dagrun_operator import TriggerDagRunOperator
 from airflow.utils.dates import days_ago
 from airflow.models.param import Param
-from airflow.operators.python_operator import PythonOperator
-from airflow.providers.cncf.kubernetes.operators.spark_kubernetes import SparkKubernetesOperator
-from airflow.providers.cncf.kubernetes.sensors.spark_kubernetes import SparkKubernetesSensor
-
 
 # Define default arguments
 default_args = {
@@ -17,12 +13,7 @@ default_args = {
     'retry_delay': timedelta(minutes=1),
 }
 
-def start_job():
-    print("Start ETL by Query...")
 
-def end_job():
-    print("Data insert to Table Done...")
-    
 # Define the DAG
 dag = DAG(
     'FN00001',
@@ -36,32 +27,12 @@ dag = DAG(
 )
 
 # Define the TriggerDagRunOperator to trigger CNTL_FRAMEWORK DAG
-task1 = PythonOperator(
-    task_id='Start_Data_Reading',
-    python_callable=start_job,
+trigger_cntl_framework = TriggerDagRunOperator(
+    task_id='trigger_cntl_framework',
+    trigger_dag_id='CNTL_FRAMEWORK',  # specify the DAG ID of the target DAG you want to trigger
     dag=dag,
-)
-task2=SparkKubernetesOperator(
-    task_id='Spark_etl_submit',
-    application_file="FN00001.yaml",
-    do_xcom_push=True,
-    dag=dag,
-    api_group="sparkoperator.hpe.com",
-    enable_impersonation_from_ldap_user=True
+    params={'STREM_NM': 'STREM_INGESTION'}
 )
 
-task3 = SparkKubernetesSensor(
-    task_id='Spark_etl_monitor',
-    application_name="{{ task_instance.xcom_pull(task_ids='Spark_etl_submit')['metadata']['name'] }}",
-    dag=dag,
-    api_group="sparkoperator.hpe.com",
-    attach_log=True
-)
-
-task4 = PythonOperator(
-    task_id='Data_Loading_Done',
-    python_callable=end_job,
-    dag=dag,
-)
-
-task1>>task2>>task3>>task4
+# Set task dependencies
+trigger_cntl_framework
