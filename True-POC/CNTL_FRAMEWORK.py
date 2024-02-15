@@ -63,55 +63,10 @@ task3 = SparkKubernetesSensor(
     do_xcom_push=True,
 )
 
-def processing(**kwargs):
-    strem_nm = kwargs["params"]["STREM_NM"]
-    file_path = f"/mnt/ezadmin/processing/{strem_nm}.csv"
-    
-    df = pd.read_csv(file_path)
-    for index, row in df.iterrows():
-        params = row['parm']
-        if row['prcs_typ'] == 1:
-            source_path = params.split('^|')[0]
-            dest_path = params.split('^|')[1]
-            print(source_path, dest_path)
-            
-            # Pass parameters to the triggered DAG using TriggerDagRunOperator
-            spark_task = TriggerDagRunOperator(
-                task_id=f"spark_job_{row['prcs_nm']}",
-                trigger_dag_id="FN00001",
-                conf={'source_path': source_path, 'dest_path': dest_path},
-                dag=dag
-            )
-            spark_task.execute(context=kwargs)
-    os.remove(file_path)
 task4 = PythonOperator(
-    task_id='processing',
-    python_callable=processing,
-    dag=dag,
-)
-
-task5 = SparkKubernetesOperator(
-    task_id='Update_log',
-    application_file="Update_log.yaml",
-    do_xcom_push=True,
-    api_group="sparkoperator.hpe.com",
-    enable_impersonation_from_ldap_user=True,
-    dag=dag,
-)
-
-task6 = SparkKubernetesSensor(
-    task_id='Update_log_monitor',
-    application_name="{{ ti.xcom_pull(task_ids='Update_log')['metadata']['name'] }}",
-    dag=dag,
-    api_group="sparkoperator.hpe.com",
-    attach_log=True,
-    do_xcom_push=True,
-)
-
-task7 = PythonOperator(
     task_id='Data_Loading_Done',
     python_callable=end_job,
     dag=dag,
 )
 
-task1 >> task2 >> task3 >> task4 >> task5 >> task6 >> task7
+task1 >> task2 >> task3 >> task4
