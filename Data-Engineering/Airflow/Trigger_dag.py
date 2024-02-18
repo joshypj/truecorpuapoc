@@ -29,7 +29,7 @@ def get_strem_nm(**kwargs):
     strem_nm = kwargs["params"]["STREM_NM"]
     trigger_task = TriggerDagRunOperator(
                     task_id="trigger_task",
-                    trigger_dag_id="TEST_CNTL_1",
+                    trigger_dag_id="CHILD_DAG",
                     conf={'STREM_NM': strem_nm},
                     dag=dag
                 )
