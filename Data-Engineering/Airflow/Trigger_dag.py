@@ -33,6 +33,7 @@ def get_strem_nm(**kwargs):
                     conf={'STREM_NM': strem_nm},
                     dag=dag
                 )
+    return trigger_task.execute(context=kwargs)
 
 task1 = PythonOperator(
     task_id='get_strem_nm',
