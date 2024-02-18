@@ -1,9 +1,9 @@
+from airflow.operators.dagrun_operator import TriggerDagRunOperator
 from datetime import datetime, timedelta
 from airflow import DAG
-from airflow.operators.dagrun_operator import TriggerDagRunOperator
 from airflow.utils.dates import days_ago
-from airflow.operators.python_operator import PythonOperator, BranchPythonOperator
-from airflow.models import Param
+from airflow.models import Param,DagRun
+from airflow.operators.python_operator import PythonOperator
 
 # Define default arguments
 default_args = {
@@ -16,50 +16,29 @@ default_args = {
 
 # Define the DAG
 dag = DAG(
-    'Trigger_dag',
+    'PARENT_DAG',
     default_args=default_args,
-    description='Trigger CNTL_FRAMEWORK',
+    description='Running Stream',
     schedule_interval=None,
-    tags=['e2e example', 'CNTL', 'Trigger'],
-    params={'STREM_NM': Param("TEST", type="string")},
+    tags=['e2e example', 'ETL', 'spark'],
+    params={'STREM_NM': Param("X3_TEST_99_D", type="string")},
     access_control={'All': {'can_read', 'can_edit', 'can_delete'}}
 )
 
-def start_job():
-    print("Start ETL by Query...")
+def get_strem_nm(**kwargs):
+    strem_nm = kwargs["params"]["STREM_NM"]
+    trigger_task = TriggerDagRunOperator(
+                    task_id="trigger_task",
+                    trigger_dag_id="TEST_CNTL_1",
+                    conf={'STREM_NM': strem_nm},
+                    dag=dag
+                )
 
-def end_job():
-    print("Data insert to Table Done...")
-
-# Define the TriggerDagRunOperator
-def trigger_dag(**kwargs):
-    strem_nm = kwargs['params']['STREM_NM']
-    return TriggerDagRunOperator(
-        task_id='call_CNTL_FRAMEWORK',
-        trigger_dag_id='CNTL_FRAMEWORK',
-        conf={'STREM_NM': strem_nm},
-        dag=dag
+task1 = PythonOperator(
+    task_id='get_strem_nm',
+    python_callable=get_strem_nm,
+    provide_context=True,
+    dag=dag,
 )
 
-# Define tasks
-start_job = PythonOperator(
-    task_id='start_job',
-    python_callable=start_job,
-    dag=dag
-)
-
-call_trigger_dag = PythonOperator(
-    task_id='call_trigger_dag',
-    python_callable=trigger_dag,
-    dag=dag
-)
-
-
-end_job = PythonOperator(
-    task_id='end_job',
-    python_callable=end_job,
-    dag=dag
-)
-
-# Set task dependencies
-start_job >> call_trigger_dag >> end_job
+task1
