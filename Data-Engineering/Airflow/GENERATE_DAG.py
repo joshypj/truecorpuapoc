@@ -84,5 +84,12 @@ for i in range(len(task_groups) - 1):
         for next_task_info in next_task_infos:
             task_info['monitor_task'] >> next_task_info['task']
 
+# Set the downstream task for the last monitor task dynamically
+last_task_id = df.iloc[-1]['prcs_nm']
+last_monitor_task = f"task_{last_task_id}_monitor"
+if last_monitor_task in tasks:
+    last_task = tasks[last_task_id]
+    task_groups[-1][-1]['monitor_task'] >> last_task
+
 # Print the tasks for verification
 print(tasks)
