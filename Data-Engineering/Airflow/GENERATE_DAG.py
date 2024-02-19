@@ -81,24 +81,13 @@ for i in range(len(task_groups) - 1):
     group = task_groups[i]
     next_group = task_groups[i + 1]
     for task_info in group:
+        task_info['task'] >> task_info['monitor_task']
         for next_task_info in next_group:
             task_info['monitor_task'] >> next_task_info['task']
 
 # Set up the initial dependency
 for task_info in task_groups[0]:
     task_info['task'] >> task_info['monitor_task']
-
-# Find the last priority in the DataFrame
-last_priority = df['prir'].max()
-
-# Set up the final dependency for the last monitor task based on the last priority
-for task_info in task_groups[-1]:
-    if task_info['prir'] == last_priority:
-        last_task_id = task_info['task'].task_id.replace('task_', '')
-        if last_task_id in tasks:
-            last_task = tasks[last_task_id]
-            last_monitor_task = f"task_{last_task_id}_monitor"
-            task_info['monitor_task'] >> last_task
 
 # Print the tasks for verification
 print(tasks)
