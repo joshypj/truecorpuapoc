@@ -71,9 +71,10 @@ tasks = {}
 
 # Iterate over the DataFrame rows
 last_task = None
+last_monitor_task_id = None  # Initialize last_monitor_task_id outside the loop
 for index, row in df.iterrows():
     task_id = f"task_{row['prcs_nm']}"
-    monitor_task_id = f"{task_id}_monitor"  # Corrected monitor_task_id generation
+    monitor_task_id = f"{task_id}_monitor"
 
     # Create SparkKubernetesOperator for each row
     task = SparkKubernetesOperator(
@@ -102,15 +103,16 @@ for index, row in df.iterrows():
             # If the current task has a higher priority than the previous one,
             # it starts a new group
             last_task.set_downstream(task)
+            last_monitor_task_id = None  # Reset last_monitor_task_id
         else:
             # If the current task has the same priority as the previous one,
             # it belongs to the same group
-            last_task.set_downstream(task)
-            tasks[last_monitor_task_id].set_upstream(tasks[task_id])  # Corrected reference to the last monitor task
+            tasks[last_monitor_task_id].set_upstream(task)  # Set the monitor task upstream
     else:
         # For the first task
         last_task = task
-
+    
+    last_task = task
     last_monitor_task_id = monitor_task_id  # Update the last monitor task ID
 
 # Print the tasks for verification
