@@ -33,10 +33,12 @@ def get_strem_nm(**kwargs):
 task1=SparkKubernetesOperator(
     task_id='Spark_etl_submit',
     application_file="start_strem.yaml",
+    default_args=default_args,
     do_xcom_push=True,
     params={"STREM_NM": 'TEST'},
     api_group="sparkoperator.hpe.com",
     enable_impersonation_from_ldap_user=True
+    
 )
 
 
