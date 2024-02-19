@@ -38,14 +38,16 @@ dag = DAG(
     }
 )
 
+
 # Dictionary to hold references to the tasks
 tasks = {}
-
+tasks_l = []
+pior = 0
 # Create the tasks and dependencies
-prev_task = None
+
 for index, row in df.iterrows():
     task_id = f"task_{row['prcs_nm']}"
-    
+    prir = row['prir']
     # Create SparkKubernetesOperator for each row
     task = SparkKubernetesOperator(
         task_id=task_id,
@@ -68,14 +70,16 @@ for index, row in df.iterrows():
         attach_log=True
     )
 
-    # Set up task dependencies
-    if prev_task:
-        if row['prir'] > 1:
-            monitor_task.set_upstream(prev_task)
-        else:
-            task.set_upstream(prev_task)
-
-    prev_task = task if row['prir'] == 1 else monitor_task
+    # Set up task dependencies based on priority
+    if row['prir'] > 1:
+        task >> monitor_task
+        if prev_task:
+            prev_task >> task
+        prev_task = monitor_task
+    else:
+        if prev_task:
+            prev_task >> task
+        prev_task = task
 
 # Print the tasks for verification
 print(tasks)
