@@ -35,10 +35,9 @@ task1=SparkKubernetesOperator(
     application_file="start_strem.yaml",
     do_xcom_push=True,
     params={"STREM_NM": 'TEST'},
+    dag=dag,
     api_group="sparkoperator.hpe.com",
     enable_impersonation_from_ldap_user=True
-    dag = dag,
-    
 )
 
 
