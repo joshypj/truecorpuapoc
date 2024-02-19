@@ -69,6 +69,9 @@ dag = DAG(
 # Dictionary to hold references to the tasks
 tasks = {}
 
+# Iterate over the DataFrame rows
+last_task = None
+
 # Create the tasks and dependencies
 prev_task = None
 for index, row in df.iterrows():
