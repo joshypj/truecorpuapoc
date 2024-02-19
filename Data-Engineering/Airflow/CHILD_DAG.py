@@ -4,7 +4,6 @@ from airflow.utils.dates import days_ago
 from airflow.models import Param,DagRun
 from airflow.operators.python_operator import PythonOperator
 from airflow.providers.cncf.kubernetes.operators.spark_kubernetes import SparkKubernetesOperator
-from airflow.providers.cncf.kubernetes.sensors.spark_kubernetes import SparkKubernetesSensor
 
 # Define default arguments
 default_args = {
@@ -32,20 +31,13 @@ def get_strem_nm(**kwargs):
     print(strem_nm)
 
 task1=SparkKubernetesOperator(
-    task_id='task1',
+    task_id='Spark_etl_submit',
     application_file="start_strem.yaml",
     do_xcom_push=True,
-    params={"STREM_NM": 'STREM_INGESTION'},
+    params={"STREM_NM": 'TEST'},
     api_group="sparkoperator.hpe.com",
     enable_impersonation_from_ldap_user=True
 )
-task2 = SparkKubernetesSensor(
-    task_id='task2',
-    application_name="{{ ti.xcom_pull(task_ids='task1')['metadata']['name'] }}",
-    dag=dag,
-    api_group="sparkoperator.hpe.com",
-    attach_log=True,
-    do_xcom_push=True,
-)
 
-task1 >> task2
+
+task1
