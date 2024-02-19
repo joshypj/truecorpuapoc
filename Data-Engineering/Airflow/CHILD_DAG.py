@@ -22,7 +22,6 @@ dag = DAG(
     description='Running Stream',
     schedule_interval=None,
     tags=['e2e example', 'ETL', 'spark'],
-    params={'STREM_NM': Param("X3_TEST_99_D", type="string")},
     access_control={'All': {'can_read', 'can_edit', 'can_delete'}}
 )
 
