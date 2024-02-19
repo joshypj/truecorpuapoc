@@ -1,26 +1,63 @@
 from datetime import datetime
-from airflow.decorators import dag, task
+from airflow import DAG
+from airflow.operators.python_operator import PythonOperator
+
+def generate_dynamic_dag(configs):
+    for config_name, config in configs.items():
+        dag_id = f"dynamic_generated_dag_{config_name}"
+
+        dag = DAG(
+            dag_id=dag_id,
+            start_date=datetime(2022, 2, 1),
+            schedule_interval=None,  # You may set the schedule interval as per your requirement
+            access_control={
+                'All': {
+                    'can_read',
+                    'can_edit',
+                    'can_delete'
+                }
+            }
+        )
+
+        def print_message(message):
+            print(message)
+
+        with dag:
+            print_message_task = PythonOperator(
+                task_id=f"print_message_task_{config_name}",
+                python_callable=print_message,
+                op_kwargs={"message": config["message"]}
+            )
+
+        print_message_task
+
+default_args = {
+    'owner': 'airflow',
+    'depends_on_past': False,
+    'email_on_failure': False,
+    'email_on_retry': False,
+    'retries': 1
+}
+
+dag = DAG(
+    'dynamic_dag_creator',
+    default_args=default_args,
+    description='Create dynamic DAGs',
+    schedule_interval='@daily',  # You may set the schedule interval as per your requirement
+    start_date=datetime(2022, 2, 1),
+    catchup=False
+)
 
 configs = {
     "config1": {"message": "first DAG will receive this message"},
     "config2": {"message": "second DAG will receive this message"},
 }
 
-for config_name, config in configs.items():
-    dag_id = f"dynamic_generated_dag_{config_name}"
+create_dags_task = PythonOperator(
+    task_id='create_dags_task',
+    python_callable=generate_dynamic_dag,
+    op_kwargs={'configs': configs},
+    dag=dag
+)
 
-    @dag(dag_id=dag_id, start_date=datetime(2022, 2, 1), access_control={
-        'All': {
-            'can_read',
-            'can_edit',
-            'can_delete'
-        }
-    })
-    def dynamic_generated_dag():
-        @task
-        def print_message(message):
-            print(message)
-
-        print_message(config["message"])
-
-    dynamic_generated_dag()
+create_dags_task
