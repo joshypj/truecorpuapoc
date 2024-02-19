@@ -1,69 +1,38 @@
 from airflow import DAG
-from airflow.providers.cncf.kubernetes.operators.spark_kubernetes import SparkKubernetesOperator
-from airflow.providers.cncf.kubernetes.sensors.spark_kubernetes import SparkKubernetesSensor
+from airflow.operators.dummy_operator import DummyOperator
 from datetime import datetime
 
-# Define your DataFrame or data
-data = [
-    {"prcs_nm": "ABC_1", "strem_nm": "STREM_ABC", "prir": 1},
-    {"prcs_nm": "ABC_2", "strem_nm": "STREM_ABC", "prir": 2},
-    {"prcs_nm": "ABC_3", "strem_nm": "STREM_ABC", "prir": 2}
-]
-
-def generate_dag(dag_id, schedule_interval):
-    # Define your default arguments for the DAG
-    default_args = {
-        'owner': 'airflow',
-        'start_date': datetime(2024, 2, 19),
-        'email_on_failure': False,
-        'email_on_retry': False,
-        'retries': 1
-    }
-
-    # Instantiate your DAG
+# Define a function to generate DAG dynamically
+def generate_dag(dag_id, schedule, default_args):
     dag = DAG(
         dag_id=dag_id,
         default_args=default_args,
-        schedule_interval=schedule_interval,  # You can set the schedule interval as needed
+        schedule_interval=schedule,
+        catchup=False
     )
 
-    # Create dictionary to store tasks
-    tasks = {}
+    # Define tasks dynamically based on some criteria
+    with dag:
+        start = DummyOperator(task_id='start')
+        end = DummyOperator(task_id='end')
 
-    # Loop through the data and create tasks dynamically
-    for row in data:
-        prcs_nm = row['prcs_nm']
-        prir = row['prir']
+        # Define additional tasks based on your requirements
+        # You can use loops or conditionals here to define tasks dynamically
 
-        # Define the SparkKubernetesOperator task
-        tasks[prcs_nm] = SparkKubernetesOperator(
-            task_id=f'task_{prcs_nm}',
-            application_file="start_strem.yaml",
-            do_xcom_push=True,
-            params={"PRCS_NM": prcs_nm},
-            dag=dag,
-            api_group="sparkoperator.hpe.com",
-            enable_impersonation_from_ldap_user=True
-        )
-
-        # Define the SparkKubernetesSensor task
-        tasks[f'{prcs_nm}_monitor'] = SparkKubernetesSensor(
-            task_id=f'task_{prcs_nm}_monitor',
-            application_name="{{ task_instance.xcom_pull(task_ids='" + f'task_{prcs_nm}' + "')['metadata']['name'] }}",
-            dag=dag,
-            api_group="sparkoperator.hpe.com",
-            attach_log=True
-        )
-
-        # Set task dependencies based on priority
-        if prir > 1:
-            tasks[f'task_{prcs_nm}'] >> tasks[f'task_{prcs_nm}_monitor']
-        else:
-            tasks['task_ABC_1'] >> tasks['task_ABC_1_monitor'] >> tasks[f'task_{prcs_nm}'] >> tasks[f'task_{prcs_nm}_monitor']
+        start >> end
 
     return dag
 
-# Generate the DAG
-dag_id = 'dynamic_spark_dag'
-schedule_interval = None  # You can set the schedule interval as needed
-generated_dag = generate_dag(dag_id, schedule_interval)
+# Define default arguments for DAGs
+default_args = {
+    'owner': 'airflow',
+    'start_date': datetime(2024, 2, 19),
+    'email_on_failure': False,
+    'email_on_retry': False,
+    'retries': 1
+}
+
+# Example of dynamically generating a DAG
+generated_dag_id = 'dynamic_dag_example'
+generated_schedule = '0 0 * * *'  # Run daily at midnight
+dynamic_dag = generate_dag(generated_dag_id, generated_schedule, default_args)
