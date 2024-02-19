@@ -39,8 +39,11 @@ dag = DAG(
 )
 
 
-# List to hold groups of tasks
-task_groups = []
+# Dictionary to hold references to the tasks
+tasks = {}
+
+# Keep track of the previous task
+prev_task = None
 
 # Iterate over the DataFrame rows
 for index, row in df.iterrows():
@@ -56,6 +59,9 @@ for index, row in df.iterrows():
         enable_impersonation_from_ldap_user=True
     )
 
+    # Add the task to the tasks dictionary
+    tasks[task_id] = task
+
     # Create SparkKubernetesSensor for each row
     monitor_task = SparkKubernetesSensor(
         task_id=f"{task_id}_monitor",
@@ -65,16 +71,24 @@ for index, row in df.iterrows():
         attach_log=True
     )
 
-    # Add the task and its monitor task to a group based on priority
-    if not task_groups or task_groups[-1][-1]['prir'] != row['prir']:
-        task_groups.append([])
-    task_groups[-1].append({'task': task, 'monitor_task': monitor_task, 'prir': row['prir']})
+    # Set up task dependencies based on priority
+    if row['prir'] > 1:
+        task >> monitor_task
+        if prev_task:
+            prev_task >> task
+        prev_task = monitor_task
+    else:
+        if prev_task:
+            prev_task >> task
+        prev_task = task
 
-# Set up dependencies between task groups
-for i in range(len(task_groups) - 1):
-    for task_info in task_groups[i]:
-        for next_task_info in task_groups[i + 1]:
-            task_info['task'] >> task_info['monitor_task'] >> next_task_info['task']
+# Set the downstream task for the last monitor task dynamically
+if prev_task:
+    last_task_id = df.iloc[-1]['prcs_nm']
+    last_monitor_task = f"task_{last_task_id}_monitor"
+    if last_monitor_task in tasks:
+        last_task = tasks[last_task_id]
+        prev_task.set_downstream(last_task)
 
 # Print the tasks for verification
-print(task_groups)
+print(tasks)
