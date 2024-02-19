@@ -43,9 +43,15 @@ dag = DAG(
     'dynamic_dag_creator',
     default_args=default_args,
     description='Create dynamic DAGs',
-    schedule_interval='@daily',  # You may set the schedule interval as per your requirement
+    schedule_interval=None,  # You may set the schedule interval as per your requirement
     start_date=datetime(2022, 2, 1),
-    catchup=False
+    access_control={
+        'All': {
+            'can_read',
+            'can_edit',
+            'can_delete'
+        }
+    }
 )
 
 configs = {
