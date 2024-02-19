@@ -4,6 +4,15 @@ from airflow.operators.python_operator import PythonOperator
 from airflow.utils.dates import days_ago
 from airflow.providers.cncf.kubernetes.operators.spark_kubernetes import SparkKubernetesOperator
 from airflow.providers.cncf.kubernetes.sensors.spark_kubernetes import SparkKubernetesSensor
+import pandas as pd
+
+# Create or read your DataFrame
+data = {
+    "prcs_nm": ["ABC_1", "ABC_2", "ABC_3", "ABC_4"],
+    "strem_nm": ["STREM_ABC"] * 4,
+    "prir": [1, 2, 2, 3]
+}
+df = pd.DataFrame(data)
 
 def generate_dynamic_dag(configs):
     for config_name, config in configs.items():
