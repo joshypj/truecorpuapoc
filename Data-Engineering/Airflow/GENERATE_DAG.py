@@ -2,6 +2,8 @@ from datetime import datetime, timedelta
 from airflow import DAG
 from airflow.operators.python_operator import PythonOperator
 from airflow.utils.dates import days_ago
+from airflow.providers.cncf.kubernetes.operators.spark_kubernetes import SparkKubernetesOperator
+from airflow.providers.cncf.kubernetes.sensors.spark_kubernetes import SparkKubernetesSensor
 
 def generate_dynamic_dag(configs):
     for config_name, config in configs.items():
@@ -55,16 +57,44 @@ dag = DAG(
     }
 )
 
-configs = {
-    "config1": {"message": "first DAG will receive this message"},
-    "config2": {"message": "second DAG will receive this message"},
-}
+# Dictionary to hold references to the tasks
+tasks = {}
 
-create_dags_task = PythonOperator(
-    task_id='create_dags_task',
-    python_callable=generate_dynamic_dag,
-    op_kwargs={'configs': configs},
-    dag=dag
-)
+# Create the tasks and dependencies
+prev_task = None
+for index, row in df.iterrows():
+    task_id = f"task_{row['prcs_nm']}"
+    
+    # Create SparkKubernetesOperator for each row
+    task = SparkKubernetesOperator(
+        task_id=task_id,
+        application_file="test_cntl.yaml",
+        do_xcom_push=True,
+        dag=dag,
+        api_group="sparkoperator.hpe.com",
+        enable_impersonation_from_ldap_user=True
+    )
 
-create_dags_task
+    # Add the task to the tasks dictionary
+    tasks[task_id] = task
+
+    # Create SparkKubernetesSensor for each row
+    monitor_task = SparkKubernetesSensor(
+        task_id=f"{task_id}_monitor",
+        application_name=f"{{{{ task_instance.xcom_pull(task_ids='{task_id}')['metadata']['name'] }}}}",
+        dag=dag,
+        api_group="sparkoperator.hpe.com",
+        attach_log=True
+    )
+
+    # Set up task dependencies
+    if prev_task:
+        if row['prir'] > 1:
+            monitor_task.set_upstream(prev_task)
+        else:
+            task.set_upstream(prev_task)
+
+    prev_task = task if row['prir'] == 1 else monitor_task
+
+# Print the tasks for verification
+print(tasks)
