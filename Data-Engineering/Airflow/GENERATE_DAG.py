@@ -1,6 +1,6 @@
 from airflow import DAG
-from airflow.contrib.operators.spark_kubernetes_operator import SparkKubernetesOperator
-from airflow.contrib.sensors.spark_kubernetes_sensor import SparkKubernetesSensor
+from airflow.providers.cncf.kubernetes.operators.spark_kubernetes import SparkKubernetesOperator
+from airflow.providers.cncf.kubernetes.sensors.spark_kubernetes import SparkKubernetesSensor
 from datetime import datetime
 
 # Define your DataFrame or data
