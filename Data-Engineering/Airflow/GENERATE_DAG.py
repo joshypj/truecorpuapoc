@@ -41,7 +41,7 @@ dag = DAG(
 
 # List to hold groups of tasks
 task_groups = []
-
+prev_monitor_task = None
 # Iterate over the DataFrame rows
 for index, row in df.iterrows():
     task_id = f"task_{row['prcs_nm']}"
