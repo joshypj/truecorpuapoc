@@ -38,29 +38,35 @@ task1 = PythonOperator(
     dag=dag,
 )
 
-def pass_strem_nm(**kwargs):
-    return kwargs['ti'].xcom_pull(task_ids='get_strem_nm')
+def submit_spark_job(**kwargs):
+    strem_nm = kwargs['task_instance'].xcom_pull(task_ids='get_strem_nm')
+    spark_operator_task = SparkKubernetesOperator(
+        task_id='Spark_etl_submit',
+        namespace='default',
+        application_file="test_cntl.yaml",  # Update with your YAML file path
+        do_xcom_push=True,
+        arguments=["--strem_nm", strem_nm],
+        dag=dag,
+        pi_group="sparkoperator.hpe.com",
+        enable_impersonation_from_ldap_user=True
+    )
+    return 'Spark job submitted successfully.'
 
-
-# Set the parameter you want to pass to the Spark application
-arguments_to_pass = {
-    'strem_nm': 'TEST'
-}
-
-
-spark_operator_task = SparkKubernetesOperator(
-    task_id='Spark_etl_submit',
-    application_file="test_cntl.yaml",
-    do_xcom_push=True,
-    arguments=["--strem_nm", "{{ params.STREM_NM }}"],
+task_submit_spark_job = PythonOperator(
+    task_id='submit_spark_job',
+    python_callable=submit_spark_job,
+    provide_context=True,
     dag=dag,
-    pi_group="sparkoperator.hpe.com",
-    enable_impersonation_from_ldap_user=True
 )
 
-# Set the parameter you want to pass to the Spark application
-spark_operator_task.params = {
-    'STREM_NM': 'your_value_here'
-}
+# Add SparkKubernetesSensor to monitor Spark job completion
+task_monitor_spark_job = SparkKubernetesSensor(
+    task_id='monitor_spark_job',
+    namespace='default',
+    application_name="{{ task_instance.xcom_pull(task_ids='submit_spark_job') }}",
+    dag=dag,
+)
 
-task1 >> spark_operator_task
+# Define the task dependencies
+task1 >> task_submit_spark_job >> task_monitor_spark_job
+
