@@ -65,16 +65,16 @@ for index, row in df.iterrows():
         attach_log=True
     )
 
-    # Add the task and its monitor task to a group based on priority
+    # Append the task and its monitor task to a group based on priority
     if not task_groups or task_groups[-1][-1]['prir'] != row['prir']:
         task_groups.append([])
     task_groups[-1].append({'task': task, 'monitor_task': monitor_task, 'prir': row['prir']})
 
-# Set up dependencies between task groups
-for i in range(len(task_groups) - 1):
-    for task_info in task_groups[i]:
-        for next_task_info in task_groups[i + 1]:
-            task_info['task'] >> task_info['monitor_task'] >> next_task_info['task']
+    # Set up dependencies between tasks and monitor tasks
+    if prev_monitor_task:
+        prev_monitor_task >> task
+    task >> monitor_task
+    prev_monitor_task = monitor_task
 
 # Print the tasks for verification
 print(task_groups)
