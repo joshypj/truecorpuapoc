@@ -3,7 +3,8 @@ from airflow import DAG
 from airflow.utils.dates import days_ago
 from airflow.models import Param,DagRun
 from airflow.operators.python_operator import PythonOperator
-
+from airflow.providers.cncf.kubernetes.operators.spark_kubernetes import SparkKubernetesOperator
+from airflow.providers.cncf.kubernetes.sensors.spark_kubernetes import SparkKubernetesSensor
 # Define default arguments
 default_args = {
     'owner': 'airflow',
@@ -27,7 +28,8 @@ dag = DAG(
 
 def get_strem_nm(**kwargs):
     strem_nm = kwargs["params"]["STREM_NM"]
-    print(strem_nm)
+    return strem_nm
+
 
 task1 = PythonOperator(
     task_id='get_strem_nm',
@@ -36,4 +38,18 @@ task1 = PythonOperator(
     dag=dag,
 )
 
-task1
+def pass_strem_nm(**kwargs):
+    return kwargs['ti'].xcom_pull(task_ids='get_strem_nm')
+
+spark_operator_task = SparkKubernetesOperator(
+    task_id='Spark_etl_submit',
+    application_file="start_strem.yaml",
+    do_xcom_push=True,
+    arguments=[pass_strem_nm],
+    dag=dag,
+    pi_group="sparkoperator.hpe.com",
+    enable_impersonation_from_ldap_user=True
+)
+
+# Define task dependencies
+task1 >> spark_operator_task
