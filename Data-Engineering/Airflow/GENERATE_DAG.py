@@ -1,8 +1,9 @@
 from datetime import datetime, timedelta
 from airflow import DAG
+from airflow.operators.python_operator import PythonOperator
+from airflow.utils.dates import days_ago
 from airflow.providers.cncf.kubernetes.operators.spark_kubernetes import SparkKubernetesOperator
 from airflow.providers.cncf.kubernetes.sensors.spark_kubernetes import SparkKubernetesSensor
-from airflow.utils.dates import days_ago
 import pandas as pd
 
 # Create or read your DataFrame
@@ -13,7 +14,35 @@ data = {
 }
 df = pd.DataFrame(data)
 
-# Define default_args for your DAG
+def generate_dynamic_dag(configs):
+    for config_name, config in configs.items():
+        dag_id = f"dynamic_generated_dag_{config_name}"
+
+        dag = DAG(
+            dag_id=dag_id,
+            start_date=datetime(2022, 2, 1),
+            schedule_interval=None,  # You may set the schedule interval as per your requirement
+            access_control={
+                'All': {
+                    'can_read',
+                    'can_edit',
+                    'can_delete'
+                }
+            }
+        )
+
+        def print_message(message):
+            print(message)
+
+        with dag:
+            print_message_task = PythonOperator(
+                task_id=f"print_message_task_{config_name}",
+                python_callable=print_message,
+                op_kwargs={"message": config["message"]}
+            )
+
+        print_message_task
+
 default_args = {
     'owner': 'airflow',
     'depends_on_past': False,
@@ -22,13 +51,12 @@ default_args = {
     'retry_delay': timedelta(minutes=1),
 }
 
-# Define your DAG
 dag = DAG(
-    'dynamic_spark_tasks_creator',
+    'dynamic_dag_creator',
     default_args=default_args,
-    description='Create dynamic Spark tasks',
-    schedule_interval=None,
-    tags=['spark', 'kubernetes'],
+    description='Create dynamic DAGs',
+    schedule_interval=None,  # You may set the schedule interval as per your requirement
+    tags=['e2e example','ETL', 'spark'],
     access_control={
         'All': {
             'can_read',
@@ -41,7 +69,8 @@ dag = DAG(
 # Dictionary to hold references to the tasks
 tasks = {}
 
-# Iterate over the DataFrame rows
+# Create the tasks and dependencies
+prev_task = None
 for index, row in df.iterrows():
     task_id = f"task_{row['prcs_nm']}"
     
@@ -68,13 +97,13 @@ for index, row in df.iterrows():
     )
 
     # Set up task dependencies
-    if row['prir'] > 1:
-        monitor_task.set_upstream(tasks[f"task_{df.iloc[index - 1]['prcs_nm']}"])
+    if prev_task:
+        if row['prir'] > 1:
+            monitor_task.set_upstream(prev_task)
+        else:
+            task.set_upstream(prev_task)
 
-# Set the downstream task
-for task_id, task in tasks.items():
-    if task_id != 'task_ABC_1':
-        task.set_downstream(tasks[task_id])
+    prev_task = task if row['prir'] == 1 else monitor_task
 
 # Print the tasks for verification
 print(tasks)
