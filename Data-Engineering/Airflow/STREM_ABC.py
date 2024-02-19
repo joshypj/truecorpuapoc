@@ -32,7 +32,7 @@ def get_strem_nm(**kwargs):
     print(strem_nm)
 
 START_STREM = SparkKubernetesOperator(
-    task_id='Spark_etl_submit',
+    task_id='START_STREM',
     application_file="START_STREM.yaml",
     do_xcom_push=True,
     api_group="sparkoperator.hpe.com",
@@ -40,4 +40,13 @@ START_STREM = SparkKubernetesOperator(
     dag=dag,
 )
 
-START_STREM
+START_STREM_MONITOR = SparkKubernetesSensor(
+    task_id='START_STREM_MONITOR',
+    application_name="{{ ti.xcom_pull(task_ids='START_STREM')['metadata']['name'] }}",
+    dag=dag,
+    api_group="sparkoperator.hpe.com",
+    attach_log=True,
+    do_xcom_push=True,
+)
+
+START_STREM >> START_STREM_MONITOR
