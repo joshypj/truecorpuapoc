@@ -89,5 +89,10 @@ for i in range(len(task_groups) - 1):
 for task_info in task_groups[0]:
     task_info['task'] >> task_info['monitor_task']
 
+# Set up the final dependency for the last monitor task
+for task_info in task_groups[-1]:
+    if task_info['prir'] == df['prir'].max():
+        task_info['task'] >> task_info['monitor_task']
+        
 # Print the tasks for verification
 print(tasks)
