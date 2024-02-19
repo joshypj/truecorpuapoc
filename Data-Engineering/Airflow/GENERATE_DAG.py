@@ -14,34 +14,6 @@ data = {
 }
 df = pd.DataFrame(data)
 
-def generate_dynamic_dag(configs):
-    for config_name, config in configs.items():
-        dag_id = f"dynamic_generated_dag_{config_name}"
-
-        dag = DAG(
-            dag_id=dag_id,
-            start_date=datetime(2022, 2, 1),
-            schedule_interval=None,  # You may set the schedule interval as per your requirement
-            access_control={
-                'All': {
-                    'can_read',
-                    'can_edit',
-                    'can_delete'
-                }
-            }
-        )
-
-        def print_message(message):
-            print(message)
-
-        with dag:
-            print_message_task = PythonOperator(
-                task_id=f"print_message_task_{config_name}",
-                python_callable=print_message,
-                op_kwargs={"message": config["message"]}
-            )
-
-        print_message_task
 
 default_args = {
     'owner': 'airflow',
