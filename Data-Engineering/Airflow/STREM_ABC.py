@@ -33,7 +33,7 @@ def get_strem_nm(**kwargs):
 
 START_STREM = SparkKubernetesOperator(
     task_id='START_STREM',
-    application_file="START_STREM.yaml",
+    application_file="start_strem.yaml",
     do_xcom_push=True,
     api_group="sparkoperator.hpe.com",
     enable_impersonation_from_ldap_user=True,
