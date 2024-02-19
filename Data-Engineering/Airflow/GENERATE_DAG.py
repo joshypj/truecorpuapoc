@@ -39,15 +39,13 @@ dag = DAG(
 )
 
 
-# Dictionary to hold references to the tasks
-tasks = {}
-tasks_l = []
-pior = 0
-# Create the tasks and dependencies
-prev_task = None
+# List to hold groups of tasks
+task_groups = []
+
+# Iterate over the DataFrame rows
 for index, row in df.iterrows():
     task_id = f"task_{row['prcs_nm']}"
-    prir = row['prir']
+    
     # Create SparkKubernetesOperator for each row
     task = SparkKubernetesOperator(
         task_id=task_id,
@@ -58,9 +56,6 @@ for index, row in df.iterrows():
         enable_impersonation_from_ldap_user=True
     )
 
-    # Add the task to the tasks dictionary
-    tasks[task_id] = task
-
     # Create SparkKubernetesSensor for each row
     monitor_task = SparkKubernetesSensor(
         task_id=f"{task_id}_monitor",
@@ -70,16 +65,16 @@ for index, row in df.iterrows():
         attach_log=True
     )
 
-    # Set up task dependencies based on priority
-    if row['prir'] > 1:
-        task >> monitor_task
-        if prev_task:
-            prev_task >> task
-        prev_task = monitor_task
-    else:
-        if prev_task:
-            prev_task >> task
-        prev_task = task
+    # Add the task and its monitor task to a group based on priority
+    if not task_groups or task_groups[-1][-1]['prir'] != row['prir']:
+        task_groups.append([])
+    task_groups[-1].append({'task': task, 'monitor_task': monitor_task, 'prir': row['prir']})
+
+# Set up dependencies between task groups
+for i in range(len(task_groups) - 1):
+    for task_info in task_groups[i]:
+        for next_task_info in task_groups[i + 1]:
+            task_info['task'] >> task_info['monitor_task'] >> next_task_info['task']
 
 # Print the tasks for verification
-print(tasks)
+print(task_groups)
