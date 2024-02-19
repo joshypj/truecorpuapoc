@@ -1,6 +1,7 @@
-from datetime import datetime
+from datetime import datetime, timedelta
 from airflow import DAG
 from airflow.operators.python_operator import PythonOperator
+from airflow.utils.dates import days_ago
 
 def generate_dynamic_dag(configs):
     for config_name, config in configs.items():
@@ -34,9 +35,9 @@ def generate_dynamic_dag(configs):
 default_args = {
     'owner': 'airflow',
     'depends_on_past': False,
-    'email_on_failure': False,
-    'email_on_retry': False,
-    'retries': 1
+    'start_date': days_ago(1),
+    'retries': 1,
+    'retry_delay': timedelta(minutes=1),
 }
 
 dag = DAG(
@@ -44,7 +45,7 @@ dag = DAG(
     default_args=default_args,
     description='Create dynamic DAGs',
     schedule_interval=None,  # You may set the schedule interval as per your requirement
-    start_date=datetime(2022, 2, 1),
+    tags=['e2e example','ETL', 'spark'],
     access_control={
         'All': {
             'can_read',
