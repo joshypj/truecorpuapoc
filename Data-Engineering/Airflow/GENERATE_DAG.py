@@ -1,9 +1,8 @@
 from datetime import datetime, timedelta
 from airflow import DAG
-from airflow.operators.python_operator import PythonOperator
-from airflow.utils.dates import days_ago
 from airflow.providers.cncf.kubernetes.operators.spark_kubernetes import SparkKubernetesOperator
 from airflow.providers.cncf.kubernetes.sensors.spark_kubernetes import SparkKubernetesSensor
+from airflow.utils.dates import days_ago
 import pandas as pd
 
 # Create or read your DataFrame
@@ -14,35 +13,7 @@ data = {
 }
 df = pd.DataFrame(data)
 
-def generate_dynamic_dag(configs):
-    for config_name, config in configs.items():
-        dag_id = f"dynamic_generated_dag_{config_name}"
-
-        dag = DAG(
-            dag_id=dag_id,
-            start_date=datetime(2022, 2, 1),
-            schedule_interval=None,  # You may set the schedule interval as per your requirement
-            access_control={
-                'All': {
-                    'can_read',
-                    'can_edit',
-                    'can_delete'
-                }
-            }
-        )
-
-        def print_message(message):
-            print(message)
-
-        with dag:
-            print_message_task = PythonOperator(
-                task_id=f"print_message_task_{config_name}",
-                python_callable=print_message,
-                op_kwargs={"message": config["message"]}
-            )
-
-        print_message_task
-
+# Define default_args for your DAG
 default_args = {
     'owner': 'airflow',
     'depends_on_past': False,
@@ -51,31 +22,22 @@ default_args = {
     'retry_delay': timedelta(minutes=1),
 }
 
+# Define your DAG
 dag = DAG(
-    'dynamic_dag_creator',
+    'dynamic_spark_tasks_creator',
     default_args=default_args,
-    description='Create dynamic DAGs',
-    schedule_interval=None,  # You may set the schedule interval as per your requirement
-    tags=['e2e example','ETL', 'spark'],
-    access_control={
-        'All': {
-            'can_read',
-            'can_edit',
-            'can_delete'
-        }
-    }
+    description='Create dynamic Spark tasks',
+    schedule_interval=None,
+    tags=['spark', 'kubernetes']
 )
 
 # Dictionary to hold references to the tasks
 tasks = {}
 
 # Iterate over the DataFrame rows
-last_task = None
-last_monitor_task_id = None  # Initialize last_monitor_task_id outside the loop
 for index, row in df.iterrows():
     task_id = f"task_{row['prcs_nm']}"
-    monitor_task_id = f"{task_id}_monitor"
-
+    
     # Create SparkKubernetesOperator for each row
     task = SparkKubernetesOperator(
         task_id=task_id,
@@ -91,29 +53,21 @@ for index, row in df.iterrows():
 
     # Create SparkKubernetesSensor for each row
     monitor_task = SparkKubernetesSensor(
-        task_id=monitor_task_id,
+        task_id=f"{task_id}_monitor",
         application_name=f"{{{{ task_instance.xcom_pull(task_ids='{task_id}')['metadata']['name'] }}}}",
         dag=dag,
         api_group="sparkoperator.hpe.com",
         attach_log=True
     )
 
-    if last_task:
-        if row['prir'] > df.iloc[index - 1]['prir']:
-            # If the current task has a higher priority than the previous one,
-            # it starts a new group
-            last_task.set_downstream(task)
-            last_monitor_task_id = None  # Reset last_monitor_task_id
-        else:
-            # If the current task has the same priority as the previous one,
-            # it belongs to the same group
-            tasks[last_monitor_task_id].set_upstream(task)  # Set the monitor task upstream
-    else:
-        # For the first task
-        last_task = task
-    
-    last_task = task
-    last_monitor_task_id = monitor_task_id  # Update the last monitor task ID
+    # Set up task dependencies
+    if row['prir'] > 1:
+        monitor_task.set_upstream(tasks[f"task_{df.iloc[index - 1]['prcs_nm']}"])
+
+# Set the downstream task
+for task_id, task in tasks.items():
+    if task_id != 'task_ABC_1':
+        task.set_downstream(tasks[task_id])
 
 # Print the tasks for verification
 print(tasks)
