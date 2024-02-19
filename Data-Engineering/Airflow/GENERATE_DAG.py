@@ -44,7 +44,7 @@ tasks = {}
 tasks_l = []
 pior = 0
 # Create the tasks and dependencies
-
+prev_task = None
 for index, row in df.iterrows():
     task_id = f"task_{row['prcs_nm']}"
     prir = row['prir']
