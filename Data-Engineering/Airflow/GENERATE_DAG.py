@@ -28,7 +28,14 @@ dag = DAG(
     default_args=default_args,
     description='Create dynamic Spark tasks',
     schedule_interval=None,
-    tags=['spark', 'kubernetes']
+    tags=['spark', 'kubernetes'],
+    access_control={
+        'All': {
+            'can_read',
+            'can_edit',
+            'can_delete'
+        }
+    }
 )
 
 # Dictionary to hold references to the tasks
