@@ -52,10 +52,15 @@ spark_operator_task = SparkKubernetesOperator(
     task_id='Spark_etl_submit',
     application_file="test_cntl.yaml",
     do_xcom_push=True,
+    arguments=["--strem_nm", "{{ params.STREM_NM }}"],
     dag=dag,
     pi_group="sparkoperator.hpe.com",
     enable_impersonation_from_ldap_user=True
 )
 
+# Set the parameter you want to pass to the Spark application
+spark_operator_task.params = {
+    'STREM_NM': 'your_value_here'
+}
 
 task1 >> spark_operator_task
