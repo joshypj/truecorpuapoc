@@ -7,8 +7,13 @@ from airflow.providers.cncf.kubernetes.sensors.spark_kubernetes import SparkKube
 import pandas as pd
 
 # Create or read your DataFrame
-strem_nm = 'STREM_ABC'
-df = pd.read_csv(f'/mnt/shared/Toh/processing/{strem_nm}.csv')
+data = {
+    "prcs_nm": ["ABC_1", "ABC_2", "ABC_3", "ABC_4","ABC_5","ABC_6"],
+    "strem_nm": ["STREM_ABC"] * 6,
+    "prir": [1, 2, 2, 3, 3, 4]
+}
+df = pd.DataFrame(data)
+
 
 default_args = {
     'owner': 'airflow',
