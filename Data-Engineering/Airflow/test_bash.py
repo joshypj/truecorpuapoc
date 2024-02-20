@@ -3,7 +3,7 @@ from airflow import DAG
 from airflow.operators.bash_operator import BashOperator
 from airflow.operators.python_operator import PythonOperator
 from airflow.utils.dates import days_ago
-
+import os 
 
 
 default_args = {
@@ -33,14 +33,7 @@ dag = DAG(
 def read_and_print_file(**kwargs):
     ti = kwargs['ti']
     file_path = '/mnt/shared/Toh/Queue.txt'  # Change this to your file path
-    try:
-        with open(file_path, 'r') as file:
-            file_content = file.read()
-            print("Content of the file:")
-            print(file_content)
-            ti.xcom_push(key='file_content', value=file_content)
-    except FileNotFoundError:
-        print(f"File not found at {file_path}")
+    print(os.getcwd())
 
 # Define the PythonOperator to read the text file and print its content
 read_file_task = PythonOperator(
