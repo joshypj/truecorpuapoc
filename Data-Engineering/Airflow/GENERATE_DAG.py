@@ -105,7 +105,6 @@ for i in range(len(task_groups) - 1):
         for next_task_info in next_group:
             task_info['monitor_task'] >> next_task_info['task']
 
-START_STREM >> START_STREM_MONITOR >> task_groups[0]
 # Set up the initial dependency
 for task_info in task_groups[0]:
     task_info['task'] >> task_info['monitor_task']
