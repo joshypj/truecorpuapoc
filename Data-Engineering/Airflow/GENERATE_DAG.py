@@ -6,14 +6,7 @@ from airflow.providers.cncf.kubernetes.operators.spark_kubernetes import SparkKu
 from airflow.providers.cncf.kubernetes.sensors.spark_kubernetes import SparkKubernetesSensor
 import pandas as pd
 
-# Create or read your DataFrame
-data = {
-    "prcs_nm": ["ABC_1", "ABC_2", "ABC_3", "ABC_4","ABC_5","ABC_6"],
-    "strem_nm": ["STREM_ABC"] * 6,
-    "prir": [1, 2, 2, 3, 3, 4]
-}
-df = pd.DataFrame(data)
-
+strem_nm = 'STREM_ABC'
 
 default_args = {
     'owner': 'airflow',
@@ -38,6 +31,26 @@ dag = DAG(
     }
 )
 
+START_STREM = SparkKubernetesOperator(
+    task_id='START_STREM',
+    application_file="start_strem.yaml",
+    do_xcom_push=True,
+    api_group="sparkoperator.hpe.com",
+    enable_impersonation_from_ldap_user=True,
+    params={'STREM_NM': strem_nm},
+    dag=dag,
+)
+
+START_STREM_MONITOR = SparkKubernetesSensor(
+    task_id='START_STREM_MONITOR',
+    application_name="{{ ti.xcom_pull(task_ids='START_STREM')['metadata']['name'] }}",
+    dag=dag,
+    api_group="sparkoperator.hpe.com",
+    attach_log=True,
+    do_xcom_push=True,
+)
+
+START_STREM >> START_STREM_MONITOR 
 
 # Dictionary to hold references to the tasks
 tasks = {}
@@ -46,6 +59,7 @@ tasks = {}
 task_groups = []
 
 # Iterate over the DataFrame rows
+df = pd.read_csv(f'/mnt/shared/Toh/processing/{strem_nm}.csv')
 for index, row in df.iterrows():
     task_id = f"{row['prcs_nm']}"
     
