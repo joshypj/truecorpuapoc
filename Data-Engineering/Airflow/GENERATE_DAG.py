@@ -56,7 +56,7 @@ START_STREM_MONITOR = SparkKubernetesSensor(
     attach_log=True,
     do_xcom_push=True,
 )
-START_STREM >> START_STREM_MONITOR
+
 # Dictionary to hold references to the tasks
 tasks = {}
 
@@ -115,4 +115,4 @@ for task_info in task_groups[-1]:
         task_info['task'] >> task_info['monitor_task']
         
 # Print the tasks for verification
-print(tasks)
+START_STREM >> START_STREM_MONITOR >> print(tasks)
