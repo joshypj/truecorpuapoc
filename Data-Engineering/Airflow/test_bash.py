@@ -4,7 +4,7 @@ from airflow.operators.bash_operator import BashOperator
 from airflow.operators.python_operator import PythonOperator
 from airflow.utils.dates import days_ago
 import os 
-
+import pandas as pd
 
 default_args = {
     'owner': 'airflow',
@@ -32,8 +32,10 @@ dag = DAG(
 # Define a Python function to read a text file and print its content
 def read_and_print_file(**kwargs):
     ti = kwargs['ti']
-    file_path = '/mnt/shared/Toh/Queue.txt'  # Change this to your file path
-    print(os.getcwd())
+    file_path = '/mnt/shared/Toh/processing/STREM_ABC.csv'  # Change this to your file path
+    print(file_path)
+    df = pd.read_csv(file_path)
+    print(df)
 
 # Define the PythonOperator to read the text file and print its content
 read_file_task = PythonOperator(
