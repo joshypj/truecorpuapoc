@@ -1,7 +1,7 @@
 apiVersion: "sparkoperator.hpe.com/v1beta2"
 kind: SparkApplication
 metadata:
-  name: spark-etl-{{ ts_nodash | replace("T", "") | lower | regex_replace("[^a-z0-9]+", "-") | trim("-") }}-{{ execution_date.strftime('%Y%m%d%H%M%S') }}-{{ params.PRCS_NM | lower }}
+  name: spark-etl-{{ts_nodash|replace("T", "")}}-{{ params.PRCS_NM | lower }}
 spec:
   sparkConf:
     spark.driver.cores: "2"
