@@ -67,6 +67,7 @@ for index, row in df.iterrows():
         task_id=f"{task_id}_monitor",
         application_name=f"{{{{ task_instance.xcom_pull(task_ids='{task_id}')['metadata']['name'] }}}}",
         dag=dag,
+        params = {'PRCS_NM' : task_id}
         api_group="sparkoperator.hpe.com",
         attach_log=True
     )
