@@ -17,6 +17,20 @@ data = {
 }
 df = pd.DataFrame(data)
 
+aws_access_key_id = os.environ["AUTH_TOKEN"]
+aws_secret_access_key = 's3abc'
+aws_region = 'us-east-2'
+
+print("Value of aws_access_key_id is: " + aws_access_key_id + "\n")
+
+
+S3_PROXY_SERVICE_SUFFIX_URL = '-service.ezdata-system.svc.cluster.local:30000'
+ON_PREM_S3_SERVICE_NAME = 'ezmerals3'
+on_prem_bucket_name = 'my-bucket'
+
+AWS_S3_SERVICE_NAME = 'awss3'
+aws_bucket_name = 'ezaf-prakash-test-01'
+
 
 default_args = {
     'owner': 'airflow',
