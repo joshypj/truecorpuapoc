@@ -52,6 +52,18 @@ START_STREM_MONITOR = SparkKubernetesSensor(
 
 START_STREM >> START_STREM_MONITOR 
 
+def read_and_print_csv(**kwargs):
+    ti = kwargs['ti']
+    strem_nm = 'STREM_ABC'
+    file_path = f'/mnt/shared/Toh/processing/{strem_nm}.csv'  # Updated file path
+    try:
+        df = pd.read_csv(file_path)  # Read the CSV file
+        print("Content of the CSV file:")
+        print(df)
+        ti.xcom_push(key='csv_dataframe', value=df)  # Push the DataFrame to XCom
+    except FileNotFoundError:
+        print(f"File not found at {file_path}")
+
 # Dictionary to hold references to the tasks
 tasks = {}
 
@@ -59,7 +71,7 @@ tasks = {}
 task_groups = []
 
 # Iterate over the DataFrame rows
-df = pd.read_csv(f'/mnt/shared/Toh/processing/{strem_nm}.csv')
+df = read_and_print_csv()
 for index, row in df.iterrows():
     task_id = f"{row['prcs_nm']}"
     
