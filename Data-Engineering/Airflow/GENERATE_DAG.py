@@ -66,7 +66,7 @@ for index, row in df.iterrows():
     monitor_task = SparkKubernetesSensor(
         task_id=f"{task_id}_monitor",
         application_name=f"{{{{ task_instance.xcom_pull(task_ids='{task_id}')['metadata']['name'] }}}}",
-        params={"PRCS_NM": row['prcs_nm']},
+        # params={"PRCS_NM": row['prcs_nm']},
         dag=dag,
         api_group="sparkoperator.hpe.com",
         attach_log=True
