@@ -47,7 +47,7 @@ task_groups = []
 
 # Iterate over the DataFrame rows
 for index, row in df.iterrows():
-    task_id = f"task_{row['prcs_nm']}"
+    task_id = f"{row['prcs_nm']}"
     
     # Create SparkKubernetesOperator for each row
     task = SparkKubernetesOperator(
@@ -66,8 +66,8 @@ for index, row in df.iterrows():
     monitor_task = SparkKubernetesSensor(
         task_id=f"{task_id}_monitor",
         application_name=f"{{{{ task_instance.xcom_pull(task_ids='{task_id}')['metadata']['name'] }}}}",
+        params={"PRCS_NM": row['prcs_nm']},
         dag=dag,
-        params = {'PRCS_NM' : task_id}
         api_group="sparkoperator.hpe.com",
         attach_log=True
     )
