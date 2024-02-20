@@ -32,7 +32,7 @@ spec:
   mode: cluster
   image: "gcr.io/mapr-252711/spark-3.4.0:v3.4.0"
   imagePullPolicy: Always
-  mainApplicationFile: "local:///mnt/shared/shared/Sprite/test_etl.py"
+  mainApplicationFile: "local:///mnt/shared/Sprite/test_etl.py"
   restartPolicy:
     type: Never
   imagePullSecrets:
