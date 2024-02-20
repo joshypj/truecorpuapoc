@@ -61,7 +61,7 @@ START_STREM_MONITOR = SparkKubernetesSensor(
 tasks = {}
 
 # List to hold task groups
-task_groups = []
+task_groups = [START_STREM >> START_STREM_MONITOR]
 
 # Iterate over the DataFrame rows
 for index, row in df.iterrows():
@@ -113,6 +113,3 @@ for task_info in task_groups[0]:
 for task_info in task_groups[-1]:
     if task_info['prir'] == df['prir'].max():
         task_info['task'] >> task_info['monitor_task']
-        
-# Print the tasks for verification
-START_STREM >> START_STREM_MONITOR >> print(tasks)
