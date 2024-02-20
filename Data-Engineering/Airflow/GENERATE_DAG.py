@@ -6,7 +6,14 @@ from airflow.providers.cncf.kubernetes.operators.spark_kubernetes import SparkKu
 from airflow.providers.cncf.kubernetes.sensors.spark_kubernetes import SparkKubernetesSensor
 import pandas as pd
 
-strem_nm = 'STREM_ABC'
+# Create or read your DataFrame
+data = {
+    "prcs_nm": ["ABC_1", "ABC_2", "ABC_3", "ABC_4","ABC_5","ABC_6"],
+    "strem_nm": ["STREM_ABC"] * 6,
+    "prir": [1, 2, 2, 3, 3, 4]
+}
+df = pd.DataFrame(data)
+
 
 default_args = {
     'owner': 'airflow',
@@ -37,7 +44,7 @@ START_STREM = SparkKubernetesOperator(
     do_xcom_push=True,
     api_group="sparkoperator.hpe.com",
     enable_impersonation_from_ldap_user=True,
-    params={'STREM_NM': strem_nm},
+    params={'STREM_NM': 'STREM_ABC'},
     dag=dag,
 )
 
@@ -49,21 +56,7 @@ START_STREM_MONITOR = SparkKubernetesSensor(
     attach_log=True,
     do_xcom_push=True,
 )
-
-START_STREM >> START_STREM_MONITOR 
-
-def read_and_print_csv(**kwargs):
-    ti = kwargs['ti']
-    strem_nm = 'STREM_ABC'
-    file_path = f'/mnt/shared/Toh/processing/{strem_nm}.csv'  # Updated file path
-    try:
-        df = pd.read_csv(file_path)  # Read the CSV file
-        print("Content of the CSV file:")
-        print(df)
-        ti.xcom_push(key='csv_dataframe', value=df)  # Push the DataFrame to XCom
-    except FileNotFoundError:
-        print(f"File not found at {file_path}")
-
+START_STREM >> START_STREM_MONITOR
 # Dictionary to hold references to the tasks
 tasks = {}
 
@@ -71,7 +64,6 @@ tasks = {}
 task_groups = []
 
 # Iterate over the DataFrame rows
-df = read_and_print_csv()
 for index, row in df.iterrows():
     task_id = f"{row['prcs_nm']}"
     
