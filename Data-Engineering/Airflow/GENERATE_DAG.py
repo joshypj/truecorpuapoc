@@ -8,7 +8,7 @@ import pandas as pd
 
 # Create or read your DataFrame
 strem_nm = 'STREM_ABC'
-df = pd.read_csv(f'/mnt/shared/Toh/processing/{strem_nm}.txt')
+df = pd.read_csv(f'/mnt/shared/Toh/processing/{strem_nm}.csv')
 
 default_args = {
     'owner': 'airflow',
