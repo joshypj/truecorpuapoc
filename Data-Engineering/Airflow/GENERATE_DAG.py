@@ -54,10 +54,12 @@ for index, row in df.iterrows():
         task_id=task_id,
         application_file="test_cntl.yaml",
         do_xcom_push=True,
+        params={"PRCS_NM": row['prcs_nm']},
         dag=dag,
         api_group="sparkoperator.hpe.com",
         enable_impersonation_from_ldap_user=True
     )
+
 
     # Add the task to the tasks dictionary
     tasks[task_id] = task
@@ -66,7 +68,6 @@ for index, row in df.iterrows():
     monitor_task = SparkKubernetesSensor(
         task_id=f"{task_id}_monitor",
         application_name=f"{{{{ task_instance.xcom_pull(task_ids='{task_id}')['metadata']['name'] }}}}",
-        # params={"PRCS_NM": row['prcs_nm']},
         dag=dag,
         api_group="sparkoperator.hpe.com",
         attach_log=True
