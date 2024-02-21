@@ -73,7 +73,7 @@ for prcs_nm in df['prcs_nm'].unique().tolist():
         attach_log=True
     )
     dpnd_prcs_nm_l = []
-    for dpnd_prcs_nm in df.loc[df['prcs_nm']==prcs_nm].tolist() :
+    for dpnd_prcs_nm in df.loc[df['prcs_nm']==prcs_nm].unique().tolist() :
         if dpnd_prcs_nm != None and dpnd_prcs_nm not in dpnd_prcs_nm_s and dpnd_prcs_nm not in df['prcs_nm'].unique().tolist() :
             wait_task = DummyOperator(
                 task_id = f"wait_{dpnd_prcs_nm}",
