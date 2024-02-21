@@ -8,9 +8,9 @@ import pandas as pd
 
 # Create or read your DataFrame
 data = {
-    "prcs_nm": ["ABC_1", "ABC_2", "ABC_3", "ABC_4","ABC_5","ABC_6"],
-    "strem_nm": ["STREM_ABC"] * 6,
-    "prir": [1, 2, 2, 3, 3, 4]
+    "prcs_nm": ["ABC_1", "ABC_2", "ABC_3", "ABC_4"],
+    "strem_nm": ["STREM_ABC"] * 4,
+    "prir": [1, 2, 2, 3]
 }
 df = pd.DataFrame(data)
 
