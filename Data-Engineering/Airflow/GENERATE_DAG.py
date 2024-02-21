@@ -96,7 +96,7 @@ for prcs_nm in df['prcs_nm'].unique().tolist():
 # Set up dependencies between task groups
 for i in task_groups:
     for j in i['dpnd'] :
-        i['dpnd'][j] >> i['task']
+        j >> i['task']
     i['task'] >> i['monitor_task']
         
 # Print the tasks for verification
