@@ -86,19 +86,18 @@ for prcs_nm in df['prcs_nm'].unique().tolist():
              dpnd_prcs_nm_l.append(dpnd_prcs_nm_s[dpnd_prcs_nm])
          
         elif dpnd_prcs_nm != None and dpnd_prcs_nm  in df['prcs_nm'].unique().tolist() :
-            for i in range(len(task_groups)) :
-                if task_groups[i]['prcs_nm'] == dpnd_prcs_nm :
-                    dpnd_prcs_nm_l.append(task_groups[i]['monitor_task'])
+            for i in task_groups :
+                if i['prcs_nm'] == dpnd_prcs_nm :
+                    dpnd_prcs_nm_l.append(i['monitor_task'])
     
-    task_groups.append([])
-    task_groups[-1].append({'prcs_nm' : prcs_nm,'task': task, 'monitor_task': monitor_task, 'dpnd': dpnd_prcs_nm_l})
+    task_groups.append({'prcs_nm' : prcs_nm,'task': task, 'monitor_task': monitor_task, 'dpnd': dpnd_prcs_nm_l})
 
 
 # Set up dependencies between task groups
-for i in range(len(task_groups)):
-    for j in task_groups[i]['dpnd'] :
-        task_groups[i]['dpnd'][j] >> task_groups[i]['task']
-    task_groups[i]['task'] >> task_groups[i]['monitor_task']
+for i in task_groups:
+    for j in i['dpnd'] :
+        i['dpnd'][j] >> i['task']
+    i['task'] >> i['monitor_task']
         
 # Print the tasks for verification
 print(tasks)
