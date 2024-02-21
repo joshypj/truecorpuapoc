@@ -15,7 +15,7 @@ data = {
 }
 df = pd.DataFrame(data)
 
-presto_hook = PrestoHook(presto_conn_id='presto_localhost')
+presto_hook = PrestoHook(presto_conn_id='presto_default')
 sql_query = "SELECT * FROM your_table;"
 records = presto_hook.get_records(sql_query)
 
