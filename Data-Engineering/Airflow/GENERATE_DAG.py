@@ -9,8 +9,8 @@ from airflow.operators.dummy_operator import DummyOperator
 
 # Create or read your DataFrame
 data = {
-    "prcs_nm": ["ABC_1", "ABC_2", "ABC_3","ABC_3", "ABC_4","ABC_4"],
-    "dpnd_prcs_nm": [None,"ABC_1","ABC_1","XY_1","ABC_2","ABC_3"]
+    "prcs_nm": ["ABC_1", "ABC_2", "ABC_3", "ABC_3", "ABC_4", "ABC_4"],
+    "dpnd_prcs_nm": [None, "ABC_1", "ABC_1", "XY_1", "ABC_1", "ABC_2"]
 }
 df = pd.DataFrame(data)
 
@@ -42,26 +42,24 @@ dag = DAG(
 # Dictionary to hold references to the tasks
 tasks = {}
 
-# Dummy operator for checking dependency process status
-check_dependency_status = DummyOperator(
-    task_id='CHECK_DEPENDENCY_STATUS',
-    dag=dag
-)
-
+# List to hold task groups
+task_groups = []
+dpnd_prcs_nm_s = {}
 # Iterate over the DataFrame rows
-for index, row in df.iterrows():
-    task_id = row['prcs_nm']
-
+for prcs_nm in df['prcs_nm'].unique().tolist():
+    task_id = prcs_nm
+    
     # Create SparkKubernetesOperator for each row
     task = SparkKubernetesOperator(
         task_id=task_id,
         application_file="test_cntl.yaml",
         do_xcom_push=True,
-        params={"PRCS_NM": task_id},
+        params={"PRCS_NM": prcs_nm},
         dag=dag,
         api_group="sparkoperator.hpe.com",
         enable_impersonation_from_ldap_user=True
     )
+
 
     # Add the task to the tasks dictionary
     tasks[task_id] = task
@@ -69,21 +67,38 @@ for index, row in df.iterrows():
     # Create SparkKubernetesSensor for each row
     monitor_task = SparkKubernetesSensor(
         task_id=f"{task_id}_monitor",
-        application_name="{{ task_instance.xcom_pull(task_ids='" + task_id + "') }}",
+        application_name=f"{{{{ task_instance.xcom_pull(task_ids='{task_id}')['metadata']['name'] }}}}",
         dag=dag,
         api_group="sparkoperator.hpe.com",
         attach_log=True
     )
+    dpnd_prcs_nm_l = []
+    for dpnd_prcs_nm in df.loc[df['prcs_nm']==prcs_nm].tolist() :
+        if dpnd_prcs_nm != None and dpnd_prcs_nm not in dpnd_prcs_nm_s and dpnd_prcs_nm not in df['prcs_nm'].unique().tolist() :
+            wait_task = DummyOperator(
+                task_id = f"wait_{dpnd_prcs_nm}",
+                dag = dag
+            )
+            dpnd_prcs_nm_l.append(wait_task)
+            dpnd_prcs_nm_s[dpnd_prcs_nm] = wait_task
+            
+        elif dpnd_prcs_nm != None and dpnd_prcs_nm in dpnd_prcs_nm_s and dpnd_prcs_nm not in df['prcs_nm'].unique().tolist() : 
+             dpnd_prcs_nm_l.append(dpnd_prcs_nm_s[dpnd_prcs_nm])
+         
+        elif dpnd_prcs_nm != None and dpnd_prcs_nm  in df['prcs_nm'].unique().tolist() :
+            for i in task_groups :
+                if i['prcs_nm'] == dpnd_prcs_nm :
+                    dpnd_prcs_nm_l.append(i['monitor_task'])
+    
+    task_groups.append([])
+    task_groups[-1].append({'prcs_nm' : prcs_nm,'task': task, 'monitor_task': monitor_task, 'dpnd': dpnd_prcs_nm_l})
 
-    # Set upstream dependencies
-    if row['dpnd_prcs_nm']:
-        if row['dpnd_prcs_nm'] in tasks:
-            tasks[row['dpnd_prcs_nm']] >> monitor_task
-        else:
-            tasks[row['dpnd_prcs_nm']] = check_dependency_status
-            tasks[row['dpnd_prcs_nm']] >> monitor_task
-    else:
-        check_dependency_status >> monitor_task
 
+# Set up dependencies between task groups
+for i in range(len(task_groups)):
+    for j in task_groups[i]['dpnd'] :
+        task_groups[i]['dpnd'][j] >> task_groups[i]['task']
+    task_groups[i]['task'] >> task_groups[i]['monitor_task']
+        
 # Print the tasks for verification
 print(tasks)
