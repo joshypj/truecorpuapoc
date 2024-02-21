@@ -87,8 +87,8 @@ for prcs_nm in df['prcs_nm'].unique().tolist():
          
         elif dpnd_prcs_nm != None and dpnd_prcs_nm  in df['prcs_nm'].unique().tolist() :
             for i in task_groups :
-                if i['prcs_nm'] == dpnd_prcs_nm :
-                    dpnd_prcs_nm_l.append(i['monitor_task'])
+                if task_groups[i]['prcs_nm'] == dpnd_prcs_nm :
+                    dpnd_prcs_nm_l.append(task_groups[i]['monitor_task'])
     
     task_groups.append([])
     task_groups[-1].append({'prcs_nm' : prcs_nm,'task': task, 'monitor_task': monitor_task, 'dpnd': dpnd_prcs_nm_l})
