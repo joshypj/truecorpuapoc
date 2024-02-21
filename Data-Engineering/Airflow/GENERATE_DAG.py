@@ -5,7 +5,6 @@ from airflow.utils.dates import days_ago
 from airflow.providers.cncf.kubernetes.operators.spark_kubernetes import SparkKubernetesOperator
 from airflow.providers.cncf.kubernetes.sensors.spark_kubernetes import SparkKubernetesSensor
 import pandas as pd
-from airflow.hooks.presto_hook import PrestoHook
 
 # Create or read your DataFrame
 data = {
@@ -14,11 +13,6 @@ data = {
     "prir": [1, 2, 2, 3, 3, 4]
 }
 df = pd.DataFrame(data)
-
-presto_hook = PrestoHook(presto_conn_id='presto_default')
-sql_query = "SELECT * FROM your_table;"
-records = presto_hook.get_records(sql_query)
-
 
 
 default_args = {
@@ -43,8 +37,6 @@ dag = DAG(
         }
     }
 )
-
-df = pd.read_csv(filepath)
 
 
 # Dictionary to hold references to the tasks
