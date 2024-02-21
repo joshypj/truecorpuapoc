@@ -8,9 +8,8 @@ import pandas as pd
 
 # Create or read your DataFrame
 data = {
-    "prcs_nm": ["ABC_1", "ABC_2", "ABC_3", "ABC_4"],
-    "strem_nm": ["STREM_ABC"] * 4,
-    "prir": [1, 2, 2, 3]
+    "prcs_nm": ["ABC_1", "ABC_2", "ABC_3","ABC_3", "ABC_4"],
+    "dpnd_prcs_nm": [None,"ABC_1","ABC_1","XY_1","ABC_2","ABC_3"]
 }
 df = pd.DataFrame(data)
 
@@ -42,29 +41,32 @@ dag = DAG(
 # Dictionary to hold references to the tasks
 tasks = {}
 
-# List to hold task groups
-task_groups = []
+# Create a dummy task to check dependency status
+check_dependency_status = PythonOperator(
+    task_id='check_dependency_status',
+    python_callable=lambda: None,
+    dag=dag,
+)
 
 # Iterate over the DataFrame rows
 for index, row in df.iterrows():
-    task_id = f"{row['prcs_nm']}"
-    
-    # Create SparkKubernetesOperator for each row
+    prcs_nm = row['prcs_nm']
+    dpnd_prcs_nm = row['dpnd_prcs_nm']
+
+    # Create SparkKubernetesOperator for prcs_nm
+    task_id = f"{prcs_nm}"
     task = SparkKubernetesOperator(
         task_id=task_id,
         application_file="test_cntl.yaml",
         do_xcom_push=True,
-        params={"PRCS_NM": row['prcs_nm']},
+        params={"PRCS_NM": prcs_nm},
         dag=dag,
         api_group="sparkoperator.hpe.com",
         enable_impersonation_from_ldap_user=True
     )
-
-
-    # Add the task to the tasks dictionary
     tasks[task_id] = task
 
-    # Create SparkKubernetesSensor for each row
+    # Create SparkKubernetesSensor for prcs_nm
     monitor_task = SparkKubernetesSensor(
         task_id=f"{task_id}_monitor",
         application_name=f"{{{{ task_instance.xcom_pull(task_ids='{task_id}')['metadata']['name'] }}}}",
@@ -73,28 +75,17 @@ for index, row in df.iterrows():
         attach_log=True
     )
 
-    # Append the task and its monitor task to the appropriate group based on priority
-    if not task_groups or task_groups[-1][0]['prir'] != row['prir']:
-        task_groups.append([])
-    task_groups[-1].append({'task': task, 'monitor_task': monitor_task, 'prir': row['prir']})
+    # Set dependency for prcs_nm >> prcs_nm_monitor
+    task >> monitor_task
 
-# Set up dependencies between task groups
-for i in range(len(task_groups) - 1):
-    group = task_groups[i]
-    next_group = task_groups[i + 1]
-    for task_info in group:
-        task_info['task'] >> task_info['monitor_task']
-        for next_task_info in next_group:
-            task_info['monitor_task'] >> next_task_info['task']
+    # Check if dpnd_prcs_nm is not None and it exists in the tasks
+    if dpnd_prcs_nm is not None and dpnd_prcs_nm in tasks:
+        # Set the dependency if dpnd_prcs_nm is in the tasks
+        tasks[dpnd_prcs_nm] >> task
 
-# Set up the initial dependency
-for task_info in task_groups[0]:
-    task_info['task'] >> task_info['monitor_task']
+    else:
+        # Set the dependency on the dummy check_dependency_status task
+        check_dependency_status >> task
 
-# Set up the final dependency for the last monitor task
-for task_info in task_groups[-1]:
-    if task_info['prir'] == df['prir'].max():
-        task_info['task'] >> task_info['monitor_task']
-        
 # Print the tasks for verification
 print(tasks)
