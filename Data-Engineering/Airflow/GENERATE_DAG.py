@@ -8,7 +8,7 @@ import pandas as pd
 
 # Create or read your DataFrame
 data = {
-    "prcs_nm": ["ABC_1", "ABC_2", "ABC_3","ABC_3", "ABC_4"],
+    "prcs_nm": ["ABC_1", "ABC_2", "ABC_3","ABC_3", "ABC_4","ABC_4"],
     "dpnd_prcs_nm": [None,"ABC_1","ABC_1","XY_1","ABC_2","ABC_3"]
 }
 df = pd.DataFrame(data)
