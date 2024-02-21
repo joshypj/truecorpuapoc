@@ -5,7 +5,7 @@ from airflow.utils.dates import days_ago
 from airflow.providers.cncf.kubernetes.operators.spark_kubernetes import SparkKubernetesOperator
 from airflow.providers.cncf.kubernetes.sensors.spark_kubernetes import SparkKubernetesSensor
 import pandas as pd
-
+from airflow.hooks.presto_hook import PrestoHook
 
 # Create or read your DataFrame
 data = {
@@ -14,6 +14,11 @@ data = {
     "prir": [1, 2, 2, 3, 3, 4]
 }
 df = pd.DataFrame(data)
+
+presto_hook = PrestoHook(presto_conn_id='eyJhbGciOiJSUzI1NiIsInR5cCIgOiAiSldUIiwia2lkIiA6ICJwNTdWNHFEVldrTlp6Zkw4Z0h1STNmRHdtTFQ0VjlMN05wWDFMWkdOWjg4In0.eyJleHAiOjE3MDg1NjcwMjMsImlhdCI6MTcwNzk2MjIyMywiYXV0aF90aW1lIjoxNzA3OTYyMjIzLCJqdGkiOiJhNGIzOGU2ZS1jYmVjLTQxMWYtYjVlNy0yZjFkNTczMjQzZjgiLCJpc3MiOiJodHRwczovL2tleWNsb2FrLnRydWVwb2MuZXphcGFjLmNvbS9yZWFsbXMvVUEiLCJhdWQiOiJ1YSIsInN1YiI6ImQxYTliNTNjLWEzNGItNDUzNy05YTMzLWNjZjBjZDFjY2VjMSIsInR5cCI6IklEIiwiYXpwIjoidWEiLCJub25jZSI6IldVSVdsWmZvVFliOGRuZEVmUkpodWF1MHMwVWliVENWeFRWVE1UVTdzMjQiLCJzZXNzaW9uX3N0YXRlIjoiNzdlZjIzN2EtMWJlOS00NTZkLWFhOTQtMmE4ZGZhNTI5M2JiIiwiYXRfaGFzaCI6IjlVemViX2I4ZTY5cUtYRkN5UjFLSmciLCJhY3IiOiIxIiwic2lkIjoiNzdlZjIzN2EtMWJlOS00NTZkLWFhOTQtMmE4ZGZhNTI5M2JiIiwidWlkIjoiNjAwMCIsImVtYWlsX3ZlcmlmaWVkIjpmYWxzZSwiZ2lkIjoiNTAwNSIsIm5hbWUiOiJlemFkbWluIHRlc3QiLCJncm91cHMiOlsidWEtZW5hYmxlZCIsIm9mZmxpbmVfYWNjZXNzIiwiYWRtaW4iLCJ1bWFfYXV0aG9yaXphdGlvbiIsImRlZmF1bHQtcm9sZXMtdWEiXSwicHJlZmVycmVkX3VzZXJuYW1lIjoiZXphZG1pbiIsImdpdmVuX25hbWUiOiJlemFkbWluIiwicG9zaXhfdXNlcm5hbWUiOiJlemFkbWluIiwiZmFtaWx5X25hbWUiOiJ0ZXN0IiwiZW1haWwiOiJlemFkbWluQGV6YXBhYy5jb20ifQ.FPlrCasM3CFq1ip10ZIkX_fw0-2cg7uARZhciW9gAxjhp4uoU6lkCJEJiyRkkpqyVDPPLHAjU1Tgv70rlFsR-dLjwWeyHfHR04pGoG2PmsolovWYTxFhILQtoT9rrFfY4tmOXdoxkJYrO1SNn5hdq5BDkvCiodl0FukojbiS4n_f2zgfYTeB5dEAIwcH04fEuG6X5JATe9wdz7xQNbbSV2brNQw1IartBm9HsnRza7RaJHe9bd-3q4J5Xp25ddS0IYPow6fi6DeMwCIDu0G9j7FnsjxXEeee86gGjCZwdwGMd0YM6XnAfs-uFsTZMweEuPynBgnvUBKsRqEwQjGQ-g')
+sql_query = "SELECT * FROM your_table;"
+records = presto_hook.get_records(sql_query)
+
 
 
 default_args = {
@@ -38,6 +43,8 @@ dag = DAG(
         }
     }
 )
+
+df = pd.read_csv(filepath)
 
 
 # Dictionary to hold references to the tasks
