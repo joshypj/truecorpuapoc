@@ -21,8 +21,9 @@ dag = DAG(
     'STREM_ABC',
     default_args=default_args,
     description='Create dynamic DAGs',
-    schedule_interval=None,  # You may set the schedule interval as per your requirement
+    schedule_interval='0 6 * * *',  # Schedule to run daily at 6:00 AM
     tags=['e2e example','ETL', 'spark'],
+    params={"STREM_NM": 'STREM_ABC'},
     access_control={
         'All': {
             'can_read',
@@ -31,6 +32,8 @@ dag = DAG(
         }
     }
 )
+
+
 
 def check_dpnd(dpnd_prcs_nm, log_df):
     if dpnd_prcs_nm in log_df['prcs_nm'].unique().tolist():
@@ -72,7 +75,7 @@ data = {
     'strem_id' : [1,2,2],
     'strt_dttm' : [None,None,None],
     'end_dttm' : [None,None,None],
-    'st' : ['FAILED','FAILED','SUCCESS'],
+    'st' : ['FAILED','SUCCESS','SUCCESS'],
     'rmrk' : [None,None,None],
     'updt_dttm' : [None,None,None],
     'updt_by' : [None,None,None]
