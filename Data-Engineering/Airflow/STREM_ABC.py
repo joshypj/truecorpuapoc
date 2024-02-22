@@ -17,7 +17,7 @@ default_args = {
 
 # Define the DAG
 dag = DAG(
-    'STREM_ABC',
+    'STREM_ABC_1',
     default_args=default_args,
     description='Running Stream',
     schedule_interval=None,
