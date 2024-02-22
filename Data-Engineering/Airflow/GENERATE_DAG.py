@@ -32,22 +32,31 @@ dag = DAG(
     }
 )
 
-def check_dpnd(dpnd_prcs_nm,log_df) :
-    if dpnd_prcs_nm in log_df['prcs_nm'].unique().tolist() :
+def check_dpnd(dpnd_prcs_nm, log_df):
+    if dpnd_prcs_nm in log_df['prcs_nm'].unique().tolist():
         # Filter rows where prcs_nm is dpnd_prcs_nm
-        dpnd_prcs_nm_df = log_df.loc[[log_df['prcs_nm'] == 'XY_1']]
+        dpnd_prcs_nm_df = log_df[log_df['prcs_nm'] == dpnd_prcs_nm]
 
-        # Find the row with the maximum ld_id
-        max_ld_id_row = dpnd_prcs_nm_df.loc[[dpnd_prcs_nm_df['ld_id'] == dpnd_prcs_nm_df['ld_id'].max()]]
+        # Check if the filtered DataFrame is empty
+        if not dpnd_prcs_nm_df.empty:
+            # Find the row with the maximum ld_id
+            max_ld_id_row = dpnd_prcs_nm_df[dpnd_prcs_nm_df['ld_id'] == dpnd_prcs_nm_df['ld_id'].max()]
 
-        # Get the status of the prcs_nm = dpnd_prcs_nm with the maximum ld_id
-        status = max_ld_id_row['st'].values[0]
-        if status == 'SUCCESS' :
-            return True
-        else :
-            raise Exception()
-    else :
-            raise Exception()
+            # Check if the filtered DataFrame contains rows
+            if not max_ld_id_row.empty:
+                # Get the status of the prcs_nm = dpnd_prcs_nm with the maximum ld_id
+                status = max_ld_id_row['st'].values[0]
+                if status == 'SUCCESS':
+                    return True
+                else:
+                    raise Exception("Status is not SUCCESS")
+            else:
+                raise Exception("No rows found with the maximum ld_id")
+        else:
+            raise Exception(f"No rows found with prcs_nm = {dpnd_prcs_nm}")
+    else:
+        raise Exception(f"{dpnd_prcs_nm} not found in prcs_nm column")
+
 
 # Create or read your DataFrame
 data = {
