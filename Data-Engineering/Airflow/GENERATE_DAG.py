@@ -34,17 +34,19 @@ dag = DAG(
 
 def check_dpnd(dpnd_prcs_nm,log_df) :
     if dpnd_prcs_nm in log_df['prcs_nm'].unique().tolist() :
-        # Filter rows where prcs_nm is 'XY_1'
-        dpnd_prcs_nm_df = df.loc[[df['prcs_nm'] == 'XY_1']]
+        # Filter rows where prcs_nm is dpnd_prcs_nm
+        dpnd_prcs_nm_df = log_df.loc[[log_df['prcs_nm'] == 'XY_1']]
 
         # Find the row with the maximum ld_id
         max_ld_id_row = dpnd_prcs_nm_df.loc[[dpnd_prcs_nm_df['ld_id'] == dpnd_prcs_nm_df['ld_id'].max()]]
 
-        # Get the status of the prcs_nm = 'XY_1' with the maximum ld_id
+        # Get the status of the prcs_nm = dpnd_prcs_nm with the maximum ld_id
         status = max_ld_id_row['st'].values[0]
         if status == 'SUCCESS' :
             return True
         else :
+            raise Exception()
+    else :
             raise Exception()
 
 # Create or read your DataFrame
