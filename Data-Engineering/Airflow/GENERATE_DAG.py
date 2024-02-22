@@ -35,10 +35,10 @@ dag = DAG(
 def check_dpnd(dpnd_prcs_nm,log_df) :
     if dpnd_prcs_nm in log_df['prcs_nm'].unique().tolist() :
         # Filter rows where prcs_nm is 'XY_1'
-        dpnd_prcs_nm_df = df[df['prcs_nm'] == 'XY_1']
+        dpnd_prcs_nm_df = df.loc[[df['prcs_nm'] == 'XY_1']]
 
         # Find the row with the maximum ld_id
-        max_ld_id_row = dpnd_prcs_nm_df[dpnd_prcs_nm_df['ld_id'] == dpnd_prcs_nm_df['ld_id'].max()]
+        max_ld_id_row = dpnd_prcs_nm_df.loc[[dpnd_prcs_nm_df['ld_id'] == dpnd_prcs_nm_df['ld_id'].max()]]
 
         # Get the status of the prcs_nm = 'XY_1' with the maximum ld_id
         status = max_ld_id_row['st'].values[0]
