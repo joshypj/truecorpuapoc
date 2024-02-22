@@ -119,7 +119,8 @@ for prcs_nm in df['prcs_nm'].unique().tolist():
         if dpnd_prcs_nm != None and dpnd_prcs_nm not in dpnd_prcs_nm_s and dpnd_prcs_nm not in df['prcs_nm'].unique().tolist() :
             wait_task = PythonOperator(
                 task_id = f"wait_{dpnd_prcs_nm}",
-                python_callable=check_dpnd(dpnd_prcs_nm,log_df),
+                python_callable=check_dpnd,  # Pass the reference without calling the function
+                op_args=[dpnd_prcs_nm, log_df],  # Pass arguments if needed
                 dag = dag
             )
             dpnd_prcs_nm_l.append(wait_task)
