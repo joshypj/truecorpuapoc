@@ -72,7 +72,7 @@ data = {
     'strem_id' : [1,2,2],
     'strt_dttm' : [None,None,None],
     'end_dttm' : [None,None,None],
-    'st' : ['FAILED','SUCCESS','SUCCESS'],
+    'st' : ['FAILED','FAILED','SUCCESS'],
     'rmrk' : [None,None,None],
     'updt_dttm' : [None,None,None],
     'updt_by' : [None,None,None]
