@@ -23,7 +23,7 @@ dag = DAG(
     description='Create dynamic DAGs',
     schedule_interval='0 6 * * *',  # Schedule to run daily at 6:00 AM
     tags=['e2e example','ETL', 'spark'],
-    params={"STREM_NM": 'STREM_ABC'},
+    params={"STREM_NM": 'STREM_ABC',"RUN_MODE" : 'F'},
     access_control={
         'All': {
             'can_read',
@@ -32,8 +32,8 @@ dag = DAG(
         }
     }
 )
-
-
+strem_nm = dag.params.get("STREM_NM", None)
+run_mode = dag.params.get("RUN_MODE", None)
 
 def check_dpnd(dpnd_prcs_nm, log_df):
     if dpnd_prcs_nm in log_df['prcs_nm'].unique().tolist():
