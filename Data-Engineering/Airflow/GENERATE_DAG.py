@@ -14,6 +14,21 @@ data = {
 }
 df = pd.DataFrame(data)
 
+data = {
+    'prcs_nm' : ['XY_1','XY_1','XY_2'],
+    'strem_nm' : ['STREM_XY','STREM_XY','STREM_XY'],
+    'ld_id' : ['1','2','1'] ,
+    'strem_id' : ['1','2','2'],
+    'strt_dttm' : [None,None,None],
+    'end_dttm' : [None,None,None],
+    'st' : ['FAILED','SUCCESS','SUCCESS'],
+    'rmrk' : [None,None,None],
+    'updt_dttm' : [None,None,None],
+    'updt_by' : [None,None,None]
+
+}
+
+log_df  =pd.DataFrame(data)
 
 default_args = {
     'owner': 'airflow',
@@ -38,6 +53,20 @@ dag = DAG(
     }
 )
 
+def check_dpnd(dpnd_prcs_nm,log_df) :
+    if dpnd_prcs_nm in log_df['prcs_nm'].unique().tolist() :
+        # Filter rows where prcs_nm is 'XY_1'
+        dpnd_prcs_nm_df = df[df['prcs_nm'] == 'XY_1']
+
+        # Find the row with the maximum ld_id
+        max_ld_id_row = dpnd_prcs_nm_df[dpnd_prcs_nm_df['ld_id'] == dpnd_prcs_nm_df['ld_id'].max()]
+
+        # Get the status of the prcs_nm = 'XY_1' with the maximum ld_id
+        status = max_ld_id_row['st'].values[0]
+        if status == 'SUCCESS' :
+            return True
+        else :
+            raise Exception()
 
 # Dictionary to hold references to the tasks
 tasks = {}
@@ -75,8 +104,9 @@ for prcs_nm in df['prcs_nm'].unique().tolist():
     dpnd_prcs_nm_l = []
     for dpnd_prcs_nm in df.loc[df['prcs_nm']==prcs_nm]['dpnd_prcs_nm'].unique().tolist() :
         if dpnd_prcs_nm != None and dpnd_prcs_nm not in dpnd_prcs_nm_s and dpnd_prcs_nm not in df['prcs_nm'].unique().tolist() :
-            wait_task = DummyOperator(
+            wait_task = PythonOperator(
                 task_id = f"wait_{dpnd_prcs_nm}",
+                python_callable=check_dpnd(dpnd_prcs_nm),
                 dag = dag
             )
             dpnd_prcs_nm_l.append(wait_task)
