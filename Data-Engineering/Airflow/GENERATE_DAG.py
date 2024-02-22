@@ -57,8 +57,8 @@ df = pd.DataFrame(data)
 data = {
     'prcs_nm' : ['XY_1','XY_1','XY_2'],
     'strem_nm' : ['STREM_XY','STREM_XY','STREM_XY'],
-    'ld_id' : ['1','2','1'] ,
-    'strem_id' : ['1','2','2'],
+    'ld_id' : [1,2,1] ,
+    'strem_id' : [1,2,2],
     'strt_dttm' : [None,None,None],
     'end_dttm' : [None,None,None],
     'st' : ['FAILED','SUCCESS','SUCCESS'],
