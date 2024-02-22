@@ -7,28 +7,7 @@ from airflow.providers.cncf.kubernetes.sensors.spark_kubernetes import SparkKube
 import pandas as pd
 from airflow.operators.dummy_operator import DummyOperator
 
-# Create or read your DataFrame
-data = {
-    "prcs_nm": ["ABC_1", "ABC_2", "ABC_3", "ABC_3", "ABC_4", "ABC_4"],
-    "dpnd_prcs_nm": [None, "ABC_1", "ABC_1", "XY_1", "ABC_1", "ABC_2"]
-}
-df = pd.DataFrame(data)
 
-data = {
-    'prcs_nm' : ['XY_1','XY_1','XY_2'],
-    'strem_nm' : ['STREM_XY','STREM_XY','STREM_XY'],
-    'ld_id' : ['1','2','1'] ,
-    'strem_id' : ['1','2','2'],
-    'strt_dttm' : [None,None,None],
-    'end_dttm' : [None,None,None],
-    'st' : ['FAILED','SUCCESS','SUCCESS'],
-    'rmrk' : [None,None,None],
-    'updt_dttm' : [None,None,None],
-    'updt_by' : [None,None,None]
-
-}
-
-log_df  =pd.DataFrame(data)
 
 default_args = {
     'owner': 'airflow',
@@ -39,7 +18,7 @@ default_args = {
 }
 
 dag = DAG(
-    'dynamic_dag_creator',
+    'STREM_ABC',
     default_args=default_args,
     description='Create dynamic DAGs',
     schedule_interval=None,  # You may set the schedule interval as per your requirement
@@ -67,6 +46,29 @@ def check_dpnd(dpnd_prcs_nm,log_df) :
             return True
         else :
             raise Exception()
+
+# Create or read your DataFrame
+data = {
+    "prcs_nm": ["ABC_1", "ABC_2", "ABC_3", "ABC_3", "ABC_4", "ABC_4"],
+    "dpnd_prcs_nm": [None, "ABC_1", "ABC_1", "XY_1", "ABC_1", "ABC_2"]
+}
+df = pd.DataFrame(data)
+
+data = {
+    'prcs_nm' : ['XY_1','XY_1','XY_2'],
+    'strem_nm' : ['STREM_XY','STREM_XY','STREM_XY'],
+    'ld_id' : ['1','2','1'] ,
+    'strem_id' : ['1','2','2'],
+    'strt_dttm' : [None,None,None],
+    'end_dttm' : [None,None,None],
+    'st' : ['FAILED','SUCCESS','SUCCESS'],
+    'rmrk' : [None,None,None],
+    'updt_dttm' : [None,None,None],
+    'updt_by' : [None,None,None]
+
+}
+
+log_df  =pd.DataFrame(data)
 
 # Dictionary to hold references to the tasks
 tasks = {}
@@ -106,7 +108,7 @@ for prcs_nm in df['prcs_nm'].unique().tolist():
         if dpnd_prcs_nm != None and dpnd_prcs_nm not in dpnd_prcs_nm_s and dpnd_prcs_nm not in df['prcs_nm'].unique().tolist() :
             wait_task = PythonOperator(
                 task_id = f"wait_{dpnd_prcs_nm}",
-                python_callable=check_dpnd(dpnd_prcs_nm),
+                python_callable=check_dpnd(dpnd_prcs_nm,log_df),
                 dag = dag
             )
             dpnd_prcs_nm_l.append(wait_task)
