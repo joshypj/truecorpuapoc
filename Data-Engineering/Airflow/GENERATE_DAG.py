@@ -87,7 +87,7 @@ for prcs_nm in df['prcs_nm'].unique().tolist():
         application_file="test_cntl.yaml",
         do_xcom_push=True,
         params={"PRCS_NM": prcs_nm},
-        trigger_rule = 'none_skipped',
+        trigger_rule = 'none_failed',
         dag=dag,
         api_group="sparkoperator.hpe.com",
         enable_impersonation_from_ldap_user=True
@@ -101,7 +101,7 @@ for prcs_nm in df['prcs_nm'].unique().tolist():
     monitor_task = SparkKubernetesSensor(
         task_id=f"{task_id}_monitor",
         application_name=f"{{{{ task_instance.xcom_pull(task_ids='{task_id}')['metadata']['name'] }}}}",
-        trigger_rule = 'none_skipped',
+        trigger_rule = 'none_failed',
         dag=dag,
         api_group="sparkoperator.hpe.com",
         attach_log=True
@@ -112,7 +112,7 @@ for prcs_nm in df['prcs_nm'].unique().tolist():
             wait_task = PythonOperator(
                 task_id = f"wait_{dpnd_prcs_nm}",
                 python_callable=check_dpnd,  # Pass the reference without calling the function
-                trigger_rule = 'none_skipped',
+                trigger_rule = 'none_failed',
                 op_args=[dpnd_prcs_nm, log_df],  # Pass arguments if needed
                 dag = dag
             )
