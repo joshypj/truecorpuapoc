@@ -6,6 +6,7 @@ from airflow.providers.cncf.kubernetes.operators.spark_kubernetes import SparkKu
 from airflow.providers.cncf.kubernetes.sensors.spark_kubernetes import SparkKubernetesSensor
 import pandas as pd
 from airflow.operators.dummy_operator import DummyOperator
+from airflow.models import Variable
 
 
 
@@ -62,26 +63,10 @@ def check_dpnd(dpnd_prcs_nm, log_df):
 
 
 # Create or read your DataFrame
-data = {
-    "prcs_nm": ["ABC_1", "ABC_2", "ABC_3", "ABC_3", "ABC_4", "ABC_4"],
-    "dpnd_prcs_nm": [None, "ABC_1", "ABC_1", "XY_1", "ABC_1", "ABC_3"]
-}
+data = Variable.get("dpnd_df")
 df = pd.DataFrame(data)
 
-data = {
-    'prcs_nm' : ['XY_1','XY_1','XY_2'],
-    'strem_nm' : ['STREM_XY','STREM_XY','STREM_XY'],
-    'ld_id' : [1,2,1] ,
-    'strem_id' : [1,2,2],
-    'strt_dttm' : [None,None,None],
-    'end_dttm' : [None,None,None],
-    'st' : ['FAILED','FAILED','SUCCESS'],
-    'rmrk' : [None,None,None],
-    'updt_dttm' : [None,None,None],
-    'updt_by' : [None,None,None]
-
-}
-
+data = Variable.get("prcs_log_df")
 log_df  =pd.DataFrame(data)
 
 # Dictionary to hold references to the tasks
