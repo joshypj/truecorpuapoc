@@ -7,7 +7,7 @@ from airflow.providers.cncf.kubernetes.sensors.spark_kubernetes import SparkKube
 import pandas as pd
 from airflow.operators.dummy_operator import DummyOperator
 from airflow.models import Variable
-
+import json
 
 
 default_args = {
@@ -63,10 +63,12 @@ def check_dpnd(dpnd_prcs_nm, log_df):
 
 
 # Create or read your DataFrame
-data = Variable.get("dpnd_df")
+variable_data  = Variable.get("dpnd_df")
+data = json.loads(variable_data)
 df = pd.DataFrame(data)
 
-data = Variable.get("prcs_log_df")
+variable_data = Variable.get("prcs_log_df")
+data = json.loads(variable_data)
 log_df  =pd.DataFrame(data)
 
 # Dictionary to hold references to the tasks
